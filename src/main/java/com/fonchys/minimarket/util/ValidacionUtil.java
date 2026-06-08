@@ -12,13 +12,13 @@ public final class ValidacionUtil {
 
     private ValidacionUtil() {}
 
-    /** Limpia y normaliza espacios en un texto (Apache Commons) */
+    /**Limpia y normaliza espacios en un texto (Apache Commons)*/
     public static String limpiarTexto(String texto) {
         if (StringUtils.isBlank(texto)) return "";
         return StringUtils.normalizeSpace(texto.trim());
     }
 
-    /** Verifica si un string representa un número válido (Apache Commons) */
+    /**Verifica si un string representa un número válido (Apache Commons)*/
     public static boolean esNumeroValido(String valor) {
         return StringUtils.isNotBlank(valor) && NumberUtils.isCreatable(valor);
     }
