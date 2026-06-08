@@ -41,7 +41,7 @@ public class DataInitializer implements CommandLineRunner {
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setRol(Usuario.Rol.ADMIN);
             usuarioRepository.save(admin);
-            logger.info("Usuario admin creado -> email: admin@fonchys.com / password: admin123");
+            
         }
         if (!usuarioRepository.existsByEmail("cajero@fonchys.com")) {
             Usuario cajero = new Usuario();
@@ -50,7 +50,7 @@ public class DataInitializer implements CommandLineRunner {
             cajero.setPassword(passwordEncoder.encode("cajero123"));
             cajero.setRol(Usuario.Rol.CAJERO);
             usuarioRepository.save(cajero);
-            logger.info("Usuario cajero creado -> email: cajero@fonchys.com / password: cajero123");
+            
         }
     }
 
