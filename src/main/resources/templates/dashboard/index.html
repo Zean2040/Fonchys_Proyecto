@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - Fonchys Minimarket</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<div class="container-fluid py-4">
+    <h2 class="mb-4 fw-bold">
+        <i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard
+    </h2>
+
+    <!-- Tarjetas de resumen -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                        <i class="bi bi-currency-dollar fs-3 text-success"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0 small">Ventas Hoy (S/.)</p>
+                        <h3 class="fw-bold mb-0 text-success" th:text="${#numbers.formatDecimal(totalVentasHoy, 1, 2)}">0.00</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                        <i class="bi bi-receipt fs-3 text-primary"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0 small">Ventas de Hoy</p>
+                        <h3 class="fw-bold mb-0 text-primary" th:text="${cantVentasHoy}">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3">
+                        <i class="bi bi-box-seam fs-3 text-info"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0 small">Total Productos</p>
+                        <h3 class="fw-bold mb-0 text-info" th:text="${totalProductos}">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
+                        <i class="bi bi-exclamation-triangle fs-3 text-warning"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0 small">Stock Bajo (&lt;5)</p>
+                        <h3 class="fw-bold mb-0 text-warning" th:text="${productosStockBajo.size()}">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerta de stock bajo -->
+    <div th:if="${not #lists.isEmpty(productosStockBajo)}" class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-warning text-dark fw-bold">
+            <i class="bi bi-exclamation-triangle me-2"></i>Productos con Stock Bajo
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Producto</th>
+                        <th>Stock Actual</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="prod : ${productosStockBajo}">
+                        <td th:text="${prod.nombre}">Producto</td>
+                        <td>
+                            <span class="badge bg-danger" th:text="${prod.stock}">0</span>
+                        </td>
+                        <td>
+                            <a th:href="@{/productos/editar/{id}(id=${prod.id})}"
+                               class="btn btn-sm btn-outline-warning"
+                               sec:authorize="hasRole('ADMIN')">
+                                <i class="bi bi-pencil me-1"></i>Editar
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Accesos rápidos -->
+    <div class="row g-3">
+        <div class="col-md-4">
+            <a th:href="@{/ventas/nueva}" class="btn btn-success w-100 py-3">
+                <i class="bi bi-cart-plus me-2 fs-5"></i>Registrar Nueva Venta
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a th:href="@{/productos}" class="btn btn-primary w-100 py-3">
+                <i class="bi bi-box-seam me-2 fs-5"></i>Ver Productos
+            </a>
+        </div>
+        <div class="col-md-4" sec:authorize="hasRole('ADMIN')">
+            <a th:href="@{/reportes/ventas/excel}" class="btn btn-outline-success w-100 py-3">
+                <i class="bi bi-file-earmark-excel me-2 fs-5"></i>Exportar Excel
+            </a>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

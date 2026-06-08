@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Proveedores - Fonchys Minimarket</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-truck me-2 text-primary"></i>Proveedores
+        </h2>
+        <a th:href="@{/proveedores/nuevo}" class="btn btn-primary" sec:authorize="hasRole('ADMIN')">
+            <i class="bi bi-plus-circle me-2"></i>Nuevo Proveedor
+        </a>
+    </div>
+
+    <!-- Alerta global de stock bajo -->
+    <div th:if="${stockBajoCount > 0}" class="alert alert-warning alert-dismissible fade show d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+        <span>
+            Hay <strong th:text="${stockBajoCount}">0</strong> producto(s) con stock bajo (≤ 5 unidades).
+            Los proveedores marcados en naranja tienen productos que necesitan reposición.
+        </span>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i><span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form th:action="@{/proveedores}" method="get" class="d-flex gap-2">
+                <input type="text" name="buscar" class="form-control" placeholder="Buscar por nombre..."
+                       th:value="${buscar}">
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="bi bi-search"></i>
+                </button>
+                <a th:href="@{/proveedores}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Nombre</th>
+                        <th>RUC</th>
+                        <th>Teléfono</th>
+                        <th>Email</th>
+                        <th>Dirección</th>
+                        <th>Estado</th>
+                        <th sec:authorize="hasRole('ADMIN')">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(proveedores)}">
+                        <td colspan="8" class="text-center text-muted py-4">
+                            <i class="bi bi-truck fs-3 d-block mb-2"></i>No hay proveedores registrados
+                        </td>
+                    </tr>
+                    <tr th:each="p : ${proveedores}"
+                        th:classappend="${stockBajoPorProveedor.containsKey(p.id)} ? 'table-warning'">
+                        <td th:text="${p.id}"></td>
+                        <td>
+                            <span class="fw-semibold" th:text="${p.nombre}"></span>
+                            <span th:if="${stockBajoPorProveedor.containsKey(p.id)}"
+                                  class="badge bg-warning text-dark ms-1">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                <span th:text="${stockBajoPorProveedor[p.id].size()}">0</span> productos bajos
+                            </span>
+                        </td>
+                        <td>
+                            <span th:text="${p.ruc != null && !p.ruc.isBlank() ? p.ruc : '—'}"></span>
+                        </td>
+                        <td>
+                            <span th:text="${p.telefono != null && !p.telefono.isBlank() ? p.telefono : '—'}"></span>
+                        </td>
+                        <td>
+                            <a th:if="${p.email != null && !p.email.isBlank()}"
+                               th:href="'mailto:' + ${p.email}"
+                               th:text="${p.email}" class="text-decoration-none"></a>
+                            <span th:unless="${p.email != null && !p.email.isBlank()}">—</span>
+                        </td>
+                        <td>
+                            <small th:text="${p.direccion != null && !p.direccion.isBlank() ? p.direccion : '—'}"></small>
+                        </td>
+                        <td>
+                            <span th:if="${p.activo}" class="badge bg-success">Activo</span>
+                            <span th:unless="${p.activo}" class="badge bg-secondary">Inactivo</span>
+                        </td>
+                        <td sec:authorize="hasRole('ADMIN')">
+                            <a th:if="${stockBajoPorProveedor.containsKey(p.id)}"
+                               th:href="@{/proveedores/whatsapp/{id}(id=${p.id})}"
+                               class="btn btn-sm btn-success me-1"
+                               title="Enviar pedido por WhatsApp"
+                               target="_blank">
+                                <i class="bi bi-whatsapp"></i> Pedir
+                            </a>
+                            <a th:href="@{/proveedores/editar/{id}(id=${p.id})}"
+                               class="btn btn-sm btn-outline-primary me-1">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form th:action="@{/proveedores/desactivar/{id}(id=${p.id})}"
+                                  method="post" class="d-inline"
+                                  onsubmit="return confirm('¿Desactivar este proveedor?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-muted small">
+            Total: <strong th:text="${proveedores.size()}">0</strong> proveedores
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

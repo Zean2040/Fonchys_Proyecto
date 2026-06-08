@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo} + ' - Fonchys Minimarket'">Proveedor - Fonchys Minimarket</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<div class="container py-4" style="max-width: 640px;">
+    <div class="d-flex align-items-center mb-4">
+        <a th:href="@{/proveedores}" class="btn btn-outline-secondary btn-sm me-3">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-truck me-2 text-primary"></i>
+            <span th:text="${titulo}">Proveedor</span>
+        </h2>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <form th:action="@{/proveedores/guardar}" th:object="${proveedor}" method="post">
+                <input type="hidden" th:field="*{id}">
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                    <input type="text" th:field="*{nombre}" class="form-control"
+                           th:classappend="${#fields.hasErrors('nombre')} ? 'is-invalid'"
+                           placeholder="Nombre del proveedor">
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('nombre')}"
+                         th:errors="*{nombre}"></div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">RUC</label>
+                        <input type="text" th:field="*{ruc}" class="form-control"
+                               th:classappend="${#fields.hasErrors('ruc')} ? 'is-invalid'"
+                               placeholder="Ej: 20123456789">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('ruc')}"
+                             th:errors="*{ruc}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Teléfono</label>
+                        <input type="text" th:field="*{telefono}" class="form-control"
+                               th:classappend="${#fields.hasErrors('telefono')} ? 'is-invalid'"
+                               placeholder="Ej: 987654321">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('telefono')}"
+                             th:errors="*{telefono}"></div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Email</label>
+                    <input type="email" th:field="*{email}" class="form-control"
+                           th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+                           placeholder="contacto@proveedor.com">
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}"
+                         th:errors="*{email}"></div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Dirección</label>
+                    <textarea th:field="*{direccion}" class="form-control" rows="2"
+                              th:classappend="${#fields.hasErrors('direccion')} ? 'is-invalid'"
+                              placeholder="Dirección del proveedor"></textarea>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('direccion')}"
+                         th:errors="*{direccion}"></div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-floppy me-2"></i>Guardar
+                    </button>
+                    <a th:href="@{/proveedores}" class="btn btn-outline-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Ventas del Día - Fonchys Minimarket</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-receipt me-2 text-success"></i>Ventas del Día
+        </h2>
+        <a th:href="@{/ventas/nueva}" class="btn btn-success">
+            <i class="bi bi-cart-plus me-2"></i>Nueva Venta
+        </a>
+    </div>
+
+    <div th:if="${exito}" class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i><span th:text="${exito}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Total del día -->
+    <div class="card border-0 shadow-sm mb-4 border-start border-success border-4">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <p class="text-muted mb-0">Total recaudado hoy</p>
+                <h3 class="fw-bold text-success mb-0">S/. <span th:text="${totalHoy}">0.00</span></h3>
+            </div>
+            <i class="bi bi-cash-stack fs-1 text-success opacity-25"></i>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Hora</th>
+                        <th>Cajero</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th sec:authorize="hasRole('ADMIN')">Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(ventas)}">
+                        <td colspan="7" class="text-center text-muted py-5">
+                            <i class="bi bi-receipt fs-2 d-block mb-2"></i>
+                            No hay ventas registradas hoy
+                        </td>
+                    </tr>
+                    <tr th:each="v : ${ventas}">
+                        <td th:text="${v.id}"></td>
+                        <td th:text="${#temporals.format(v.fecha, 'HH:mm:ss')}"></td>
+                        <td th:text="${v.usuario?.nombre ?: 'N/A'}"></td>
+                        <td>
+                            <span class="badge bg-info" th:text="${v.detalles.size() + ' item(s)'}"></span>
+                        </td>
+                        <td class="fw-bold text-success">
+                            S/. <span th:text="${#numbers.formatDecimal(v.total, 1, 2)}"></span>
+                        </td>
+                        <td>
+                            <span th:if="${v.estado.name() == 'COMPLETADA'}" class="badge bg-success">Completada</span>
+                            <span th:unless="${v.estado.name() == 'COMPLETADA'}" class="badge bg-danger">Anulada</span>
+                        </td>
+                        <td sec:authorize="hasRole('ADMIN')">
+                            <form th:if="${v.estado.name() == 'COMPLETADA'}"
+                                  th:action="@{/ventas/anular/{id}(id=${v.id})}"
+                                  method="post" class="d-inline"
+                                  onsubmit="return confirm('¿Anular esta venta?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-x-circle me-1"></i>Anular
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a th:href="@{/ventas/historial}" class="btn btn-outline-secondary">
+            <i class="bi bi-clock-history me-2"></i>Ver historial completo
+        </a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

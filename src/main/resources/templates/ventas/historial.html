@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Historial de Ventas - Fonchys Minimarket</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<div class="container-fluid py-4">
+    <h2 class="fw-bold mb-4">
+        <i class="bi bi-clock-history me-2 text-secondary"></i>Historial de Ventas
+    </h2>
+
+    <!-- Filtro por fechas -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form th:action="@{/ventas/historial}" method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Fecha Inicio</label>
+                    <input type="date" class="form-control" name="fechaInicio" th:value="${fechaInicio}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Fecha Fin</label>
+                    <input type="date" class="form-control" name="fechaFin" th:value="${fechaFin}">
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-filter me-1"></i>Filtrar
+                    </button>
+                    <a th:href="@{/ventas/historial}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg me-1"></i>Limpiar
+                    </a>
+                    <a th:href="${fechaInicio != null and fechaFin != null}
+                        ? @{/reportes/ventas/excel(fechaInicio=${fechaInicio},fechaFin=${fechaFin})}
+                        : @{/reportes/ventas/excel}"
+                       class="btn btn-outline-success">
+                        <i class="bi bi-file-earmark-excel me-1"></i>Excel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Fecha y Hora</th>
+                        <th>Cajero</th>
+                        <th>Items</th>
+                        <th>Total (S/.)</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(ventas)}">
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="bi bi-search fs-2 d-block mb-2"></i>No se encontraron ventas
+                        </td>
+                    </tr>
+                    <tr th:each="v : ${ventas}">
+                        <td th:text="${v.id}"></td>
+                        <td th:text="${#temporals.format(v.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td th:text="${v.usuario?.nombre ?: 'N/A'}"></td>
+                        <td><span class="badge bg-info" th:text="${v.detalles.size()}"></span></td>
+                        <td class="fw-bold" th:text="${#numbers.formatDecimal(v.total, 1, 2)}"></td>
+                        <td>
+                            <span th:if="${v.estado.name() == 'COMPLETADA'}" class="badge bg-success">Completada</span>
+                            <span th:unless="${v.estado.name() == 'COMPLETADA'}" class="badge bg-danger">Anulada</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-muted small">
+            Total registros: <strong th:text="${ventas.size()}">0</strong>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
