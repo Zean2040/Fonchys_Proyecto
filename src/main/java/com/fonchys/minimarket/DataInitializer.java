@@ -18,9 +18,10 @@ import java.math.BigDecimal;
 @Component
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
+    // Permite registrar mensajes en la consola
 
     private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
-
+ // Repositorios para acceder a la base de datos
     private final UsuarioRepository usuarioRepository;
     private final CategoriaRepository categoriaRepository;
     private final ProductoRepository productoRepository;
