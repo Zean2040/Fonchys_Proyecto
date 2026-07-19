@@ -45,7 +45,8 @@
                              th:errors="*{ruc}"></div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold">Teléfono</label>
+                        <!-- Formulario -->
+                        <label class="form-label fw-semibold">Celular</label>
                         <input type="text" th:field="*{telefono}" class="form-control"
                                th:classappend="${#fields.hasErrors('telefono')} ? 'is-invalid'"
                                placeholder="Ej: 987654321">
