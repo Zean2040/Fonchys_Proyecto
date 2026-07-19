@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Usuarios del Sistema - Fonchys Minimarket</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">
+                <i class="bi bi-person-gear me-2 text-primary"></i>Usuarios del Sistema
+            </h2>
+            <small class="text-muted">Cuentas de acceso y roles</small>
+        </div>
+        <a th:href="@{/usuarios/nuevo}" class="btn btn-primary">
+            <i class="bi bi-person-plus me-2"></i>Nuevo Usuario
+        </a>
+    </div>
+
+    <!-- Alertas -->
+    <div th:if="${exito}" class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i><span th:text="${exito}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Usuario</th>
+                            <th>Email</th>
+                            <th class="text-center">Rol</th>
+                            <th>Empleado vinculado</th>
+                            <th class="text-center">Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(usuarios)}">
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <i class="bi bi-people fs-2 d-block mb-2"></i>No hay usuarios registrados
+                            </td>
+                        </tr>
+                        <tr th:each="u : ${usuarios}">
+                            <td class="text-muted small" th:text="${u.id}"></td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <!-- Avatar con color según rol -->
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
+                                         style="width:36px;height:36px;min-width:36px;font-size:.8rem;"
+                                         th:classappend="${u.rol.name() == 'ADMIN'} ? 'bg-danger' : (${u.rol.name() == 'CAJERO'} ? 'bg-primary' : 'bg-warning')">
+                                        <span th:text="${#strings.substring(u.nombre, 0, 1).toUpperCase()}"></span>
+                                    </div>
+                                    <span class="fw-semibold" th:text="${u.nombre}"></span>
+                                </div>
+                            </td>
+                            <td class="text-muted small" th:text="${u.email}"></td>
+                            <td class="text-center">
+                                <span th:if="${u.rol.name() == 'ADMIN'}"
+                                      class="badge bg-danger px-3 py-2">
+                                    <i class="bi bi-shield-fill me-1"></i>Admin
+                                </span>
+                                <span th:if="${u.rol.name() == 'CAJERO'}"
+                                      class="badge bg-primary px-3 py-2">
+                                    <i class="bi bi-cash-register me-1"></i>Cajero
+                                </span>
+                                <span th:if="${u.rol.name() == 'ALMACENERO'}"
+                                      class="badge bg-warning text-dark px-3 py-2">
+                                    <i class="bi bi-boxes me-1"></i>Almacenero
+                                </span>
+                            </td>
+                            <td>
+                                <span th:if="${u.empleado != null}" class="d-flex align-items-center gap-1">
+                                    <i class="bi bi-person-badge text-success"></i>
+                                    <span th:text="${u.empleado.nombreCompleto}" class="small"></span>
+                                </span>
+                                <span th:unless="${u.empleado != null}" class="text-muted small">Sin vinculo</span>
+                            </td>
+                            <td class="text-center">
+                                <span th:if="${u.activo}" class="badge bg-success">Activo</span>
+                                <span th:unless="${u.activo}" class="badge bg-secondary">Inactivo</span>
+                            </td>
+                            <td>
+                                <a th:href="@{/usuarios/editar/{id}(id=${u.id})}"
+                                   class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form th:if="${u.activo}"
+                                      th:action="@{/usuarios/desactivar/{id}(id=${u.id})}"
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('¿Desactivar este usuario? No podrá iniciar sesión.')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Desactivar">
+                                        <i class="bi bi-slash-circle"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer text-muted small">
+            Total: <strong th:text="${usuarios.size()}">0</strong> usuarios registrados
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

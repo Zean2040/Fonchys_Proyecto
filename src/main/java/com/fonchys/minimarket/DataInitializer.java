@@ -50,7 +50,14 @@ public class DataInitializer implements CommandLineRunner {
             cajero.setPassword(passwordEncoder.encode("cajero123"));
             cajero.setRol(Usuario.Rol.CAJERO);
             usuarioRepository.save(cajero);
-            
+        }
+        if (!usuarioRepository.existsByEmail("almacenero@fonchys.com")) {
+            Usuario almacenero = new Usuario();
+            almacenero.setNombre("Almacenero Fonchys");
+            almacenero.setEmail("almacenero@fonchys.com");
+            almacenero.setPassword(passwordEncoder.encode("almacenero123"));
+            almacenero.setRol(Usuario.Rol.ALMACENERO);
+            usuarioRepository.save(almacenero);
         }
     }
 

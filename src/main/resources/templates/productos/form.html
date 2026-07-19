@@ -10,7 +10,7 @@
 
 <div th:replace="~{fragments/nav :: navbar}"></div>
 
-<div class="container py-4" style="max-width: 720px;">
+<div class="container py-4" style="max-width: 800px;">
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-primary text-white">
             <h5 class="mb-0">
@@ -22,24 +22,58 @@
             <form th:action="@{/productos/guardar}" th:object="${producto}" method="post">
                 <input type="hidden" th:field="*{id}">
 
-                <div class="row g-3">
+                <!-- SECCION: Informacion basica -->
+                <p class="text-muted small fw-semibold text-uppercase mb-2 mt-1">
+                    <i class="bi bi-tag me-1"></i>Información básica
+                </p>
+                <div class="row g-3 mb-3">
                     <div class="col-md-8">
                         <label class="form-label fw-semibold">Nombre *</label>
-                        <input type="text" class="form-control" th:field="*{nombre}" placeholder="Ej: Coca Cola 500ml">
+                        <input type="text" class="form-control" th:field="*{nombre}" placeholder="Ej: Coca Cola">
                         <div class="text-danger small" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></div>
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">Precio (S/.) *</label>
-                        <input type="number" class="form-control" th:field="*{precio}"
-                               step="0.01" min="0.01" placeholder="0.00">
-                        <div class="text-danger small" th:if="${#fields.hasErrors('precio')}" th:errors="*{precio}"></div>
+                        <label class="form-label fw-semibold">Código de Barras</label>
+                        <input type="text" class="form-control" th:field="*{codigoBarras}" placeholder="Opcional">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Descripción</label>
+                        <textarea class="form-control" th:field="*{descripcion}" rows="2"
+                                  placeholder="Descripción del producto (opcional)"></textarea>
+                    </div>
+                </div>
+
+                <hr class="my-3">
+
+                <!-- SECCION: Presentacion -->
+                <p class="text-muted small fw-semibold text-uppercase mb-2">
+                    <i class="bi bi-rulers me-1"></i>Presentación / Medida
+                </p>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Unidad de Medida</label>
+                        <select class="form-select" th:field="*{unidadMedida}">
+                            <option th:each="u : ${unidades}"
+                                    th:value="${u.name()}"
+                                    th:text="${u.name()} + ' (' + ${u.simbolo} + ')'">
+                            </option>
+                        </select>
+                        <div class="form-text">Cómo se vende: por unidad, peso, volumen…</div>
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label fw-semibold">Stock *</label>
-                        <input type="number" class="form-control" th:field="*{stock}" min="0" placeholder="0">
-                        <div class="text-danger small" th:if="${#fields.hasErrors('stock')}" th:errors="*{stock}"></div>
+                        <label class="form-label fw-semibold">Contenido Neto</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" th:field="*{contenidoNeto}"
+                                   step="0.01" min="0.01" placeholder="Ej: 500">
+                            <span class="input-group-text text-muted" id="simboloUnidad">
+                                <span th:text="${producto.unidadMedida != null ? producto.unidadMedida.simbolo : 'Unid.'}"></span>
+                            </span>
+                        </div>
+                        <div class="form-text">Dejar vacío si es por unidad simple.</div>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('contenidoNeto')}" th:errors="*{contenidoNeto}"></div>
                     </div>
 
                     <div class="col-md-4">
@@ -53,6 +87,68 @@
                             </option>
                         </select>
                     </div>
+                </div>
+
+                <hr class="my-3">
+
+                <!-- SECCION: Precios -->
+                <p class="text-muted small fw-semibold text-uppercase mb-2">
+                    <i class="bi bi-currency-dollar me-1"></i>Precios
+                </p>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Precio de Venta (S/.) *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">S/.</span>
+                            <input type="number" class="form-control" th:field="*{precio}"
+                                   step="0.01" min="0.01" placeholder="0.00">
+                        </div>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('precio')}" th:errors="*{precio}"></div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Precio de Compra (S/.)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">S/.</span>
+                            <input type="number" class="form-control" th:field="*{precioCompra}"
+                                   step="0.01" min="0.01" placeholder="0.00">
+                        </div>
+                        <div class="form-text">Cuánto te cuesta al proveedor.</div>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('precioCompra')}" th:errors="*{precioCompra}"></div>
+                    </div>
+
+                    <!-- Preview de ganancia (solo si existe precio de compra) -->
+                    <div class="col-md-4 d-flex align-items-end" th:if="${producto.ganancia != null}">
+                        <div class="alert alert-success py-2 px-3 w-100 mb-0">
+                            <small class="text-muted d-block">Ganancia por unidad</small>
+                            <strong class="text-success">
+                                S/. <span th:text="${#numbers.formatDecimal(producto.ganancia, 1, 2)}">0.00</span>
+                            </strong>
+                            <span class="badge bg-success ms-1"
+                                  th:text="${#numbers.formatDecimal(producto.margenPorcentaje, 1, 1)} + '%'"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-3">
+
+                <!-- SECCION: Inventario -->
+                <p class="text-muted small fw-semibold text-uppercase mb-2">
+                    <i class="bi bi-archive me-1"></i>Inventario
+                </p>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Stock Actual *</label>
+                        <input type="number" class="form-control" th:field="*{stock}" min="0" placeholder="0">
+                        <div class="text-danger small" th:if="${#fields.hasErrors('stock')}" th:errors="*{stock}"></div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Stock Mínimo</label>
+                        <input type="number" class="form-control" th:field="*{stockMinimo}" min="0" placeholder="5">
+                        <div class="form-text">Alerta cuando el stock llegue a este número.</div>
+                        <div class="text-danger small" th:if="${#fields.hasErrors('stockMinimo')}" th:errors="*{stockMinimo}"></div>
+                    </div>
 
                     <div class="col-md-4">
                         <label class="form-label fw-semibold">Proveedor</label>
@@ -64,17 +160,6 @@
                                     th:selected="${producto.proveedor != null and producto.proveedor.id == prov.id}">
                             </option>
                         </select>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">Código de Barras</label>
-                        <input type="text" class="form-control" th:field="*{codigoBarras}" placeholder="Opcional">
-                    </div>
-
-                    <div class="col-12">
-                        <label class="form-label fw-semibold">Descripción</label>
-                        <textarea class="form-control" th:field="*{descripcion}" rows="2"
-                                  placeholder="Descripción del producto (opcional)"></textarea>
                     </div>
                 </div>
 
@@ -92,5 +177,16 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    /* Actualiza el simbolo de la unidad en el input group de contenido neto */
+    const simbolos = {
+        'UNIDAD': 'Unid.', 'KILOGRAMO': 'kg', 'GRAMO': 'g',
+        'LITRO': 'L', 'MILILITRO': 'ml', 'PAQUETE': 'Paq.',
+        'CAJA': 'Caja', 'DOCENA': 'Doc.'
+    };
+    document.querySelector('[name="unidadMedida"]').addEventListener('change', function () {
+        document.getElementById('simboloUnidad').querySelector('span').textContent = simbolos[this.value] || '';
+    });
+</script>
 </body>
 </html>

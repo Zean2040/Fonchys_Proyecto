@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Historial de Marcaciones - Fonchys Minimarket</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">
+                <i class="bi bi-clock-history me-2 text-secondary"></i>Historial de Marcaciones
+            </h2>
+            <small th:if="${empleadoSeleccionado}" class="text-muted">
+                Empleado: <strong th:text="${empleadoSeleccionado.nombreCompleto}"></strong>
+            </small>
+        </div>
+        <a th:href="@{/empleados}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Volver
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form th:action="@{/empleados/historial}" method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Empleado</label>
+                    <select name="empleadoId" class="form-select">
+                        <option value="">— Todos —</option>
+                        <option th:each="e : ${empleados}"
+                                th:value="${e.id}"
+                                th:text="${e.nombreCompleto}"
+                                th:selected="${empleadoId != null and empleadoId == e.id}">
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Fecha Inicio</label>
+                    <input type="date" name="fechaInicio" class="form-control" th:value="${fechaInicio}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Fecha Fin</label>
+                    <input type="date" name="fechaFin" class="form-control" th:value="${fechaFin}">
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-filter me-1"></i>Filtrar
+                    </button>
+                    <a th:href="@{/empleados/historial}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg me-1"></i>Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resumen del día (tarjetas) -->
+    <div th:if="${!#lists.isEmpty(marcaciones)}" class="row g-3 mb-4">
+        <div class="col-sm-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="fs-2 fw-bold text-primary" th:text="${marcaciones.size()}">0</div>
+                <div class="text-muted small">Total Marcaciones</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="fs-2 fw-bold text-success"
+                     th:text="${#lists.size(marcaciones.?[tipo.name() == 'ENTRADA'])}">0</div>
+                <div class="text-muted small">Entradas</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="fs-2 fw-bold text-danger"
+                     th:text="${#lists.size(marcaciones.?[tipo.name() == 'SALIDA'])}">0</div>
+                <div class="text-muted small">Salidas</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="card border-0 shadow-sm text-center py-3">
+                <div class="fs-2 fw-bold text-secondary" th:text="${empleados.size()}">0</div>
+                <div class="text-muted small">Empleados activos</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla historial -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Empleado</th>
+                        <th>Cargo</th>
+                        <th>Tipo</th>
+                        <th>Fecha y Hora</th>
+                        <th>Observación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(marcaciones)}">
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="bi bi-search fs-2 d-block mb-2"></i>
+                            No se encontraron marcaciones
+                        </td>
+                    </tr>
+                    <tr th:each="m : ${marcaciones}">
+                        <td th:text="${m.id}"></td>
+                        <td>
+                            <div class="fw-semibold" th:text="${m.empleado.nombreCompleto}"></div>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary" th:text="${m.empleado.cargo}"></span>
+                        </td>
+                        <td>
+                            <span th:if="${m.tipo.name() == 'ENTRADA'}"
+                                  class="badge bg-success fs-6 px-3">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>Entrada
+                            </span>
+                            <span th:unless="${m.tipo.name() == 'ENTRADA'}"
+                                  class="badge bg-danger fs-6 px-3">
+                                <i class="bi bi-box-arrow-right me-1"></i>Salida
+                            </span>
+                        </td>
+                        <td th:text="${#temporals.format(m.fechaHora, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                        <td>
+                            <small th:text="${m.observacion != null && !m.observacion.isBlank() ? m.observacion : '—'}"
+                                   class="text-muted"></small>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-muted small">
+            Total registros: <strong th:text="${marcaciones.size()}">0</strong>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

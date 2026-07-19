@@ -9,12 +9,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 @RequiredArgsConstructor
 public class GlobalModelAdvice {
 
-    private static final int UMBRAL_STOCK = 5;
-
     private final IProductoService productoService;
 
     @ModelAttribute("stockBajoCount")
     public int stockBajoCount() {
-        return productoService.listarStockBajo(UMBRAL_STOCK).size();
+        return productoService.listarStockBajoIndividual().size();
     }
 }

@@ -13,7 +13,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
 
 @Controller
 @RequestMapping("/ventas")
@@ -37,17 +36,14 @@ public class VentaController {
     }
 
     @PostMapping("/registrar")
-    public String registrar(@RequestParam Long productoId,
-                            @RequestParam Integer cantidad,
+    public String registrar(@ModelAttribute VentaRequestDTO dto,
                             @AuthenticationPrincipal UserDetails userDetails,
                             RedirectAttributes flash) {
         try {
-            VentaRequestDTO dto = new VentaRequestDTO();
-            VentaRequestDTO.ItemDTO item = new VentaRequestDTO.ItemDTO();
-            item.setProductoId(productoId);
-            item.setCantidad(cantidad);
-            dto.setItems(List.of(item));
-
+            if (dto.getItems() == null || dto.getItems().isEmpty()) {
+                flash.addFlashAttribute("error", "El carrito está vacío. Agrega al menos un producto.");
+                return "redirect:/ventas/nueva";
+            }
             Venta venta = ventaService.registrarVenta(dto, userDetails.getUsername());
             flash.addFlashAttribute("exito",
                 "Venta #" + venta.getId() + " registrada. Total: S/. " + String.format("%.2f", venta.getTotal()));

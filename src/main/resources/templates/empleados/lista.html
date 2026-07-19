@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Empleados - Fonchys Minimarket</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-people me-2 text-primary"></i>Empleados
+        </h2>
+        <div class="d-flex gap-2">
+            <a th:href="@{/empleados/historial}" class="btn btn-outline-secondary">
+                <i class="bi bi-clock-history me-1"></i>Historial
+            </a>
+            <a th:href="@{/empleados/nuevo}" class="btn btn-primary" sec:authorize="hasRole('ADMIN')">
+                <i class="bi bi-plus-circle me-2"></i>Nuevo Empleado
+            </a>
+        </div>
+    </div>
+
+    <div th:if="${exito}" class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i><span th:text="${exito}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Búsqueda -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form th:action="@{/empleados}" method="get" class="d-flex gap-2">
+                <input type="text" name="buscar" class="form-control"
+                       placeholder="Buscar por nombre o apellido..."
+                       th:value="${buscar}">
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="bi bi-search"></i>
+                </button>
+                <a th:href="@{/empleados}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Nombre Completo</th>
+                        <th>Cargo</th>
+                        <th>Teléfono</th>
+                        <th>Email</th>
+                        <th>Estado</th>
+                        <th sec:authorize="hasRole('ADMIN')" class="text-center">Cuenta</th>
+                        <th sec:authorize="hasRole('ADMIN')">Marcación</th>
+                        <th sec:authorize="hasRole('ADMIN')">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(empleados)}">
+                        <td colspan="9" class="text-center text-muted py-5">
+                            <i class="bi bi-people fs-2 d-block mb-2"></i>No hay empleados registrados
+                        </td>
+                    </tr>
+                    <tr th:each="e : ${empleados}">
+                        <td th:text="${e.id}"></td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center"
+                                     style="width:36px;height:36px;min-width:36px;">
+                                    <i class="bi bi-person text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold" th:text="${e.nombreCompleto}"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-secondary" th:text="${e.cargo}"></span></td>
+                        <td th:text="${e.telefono != null && !e.telefono.isBlank() ? e.telefono : '—'}"></td>
+                        <td>
+                            <a th:if="${e.email != null && !e.email.isBlank()}"
+                               th:href="'mailto:' + ${e.email}" th:text="${e.email}"
+                               class="text-decoration-none small"></a>
+                            <span th:unless="${e.email != null && !e.email.isBlank()}">—</span>
+                        </td>
+                        <td>
+                            <span th:if="${e.activo}" class="badge bg-success">Activo</span>
+                            <span th:unless="${e.activo}" class="badge bg-secondary">Inactivo</span>
+                        </td>
+                        <!-- Badge cuenta de sistema -->
+                        <td sec:authorize="hasRole('ADMIN')" class="text-center">
+                            <span th:if="${empleadosConCuenta.contains(e.id)}"
+                                  class="badge bg-success-subtle text-success border border-success">
+                                <i class="bi bi-person-check me-1"></i>Con cuenta
+                            </span>
+                            <a th:unless="${empleadosConCuenta.contains(e.id)}"
+                               th:href="@{/usuarios/nuevo(empleadoId=${e.id})}"
+                               class="badge bg-light text-muted border text-decoration-none"
+                               title="Crear cuenta de sistema">
+                                <i class="bi bi-person-plus me-1"></i>Crear cuenta
+                            </a>
+                        </td>
+                        <!-- Botones de marcación rápida -->
+                        <td sec:authorize="hasRole('ADMIN')">
+                            <button class="btn btn-sm btn-success me-1"
+                                    data-bs-toggle="modal"
+                                    th:attr="data-bs-target='#modalMarcar',data-empleado-id=${e.id},data-empleado-nombre=${e.nombreCompleto},data-tipo='ENTRADA'">
+                                <i class="bi bi-box-arrow-in-right"></i> Entrada
+                            </button>
+                            <button class="btn btn-sm btn-danger"
+                                    data-bs-toggle="modal"
+                                    th:attr="data-bs-target='#modalMarcar',data-empleado-id=${e.id},data-empleado-nombre=${e.nombreCompleto},data-tipo='SALIDA'">
+                                <i class="bi bi-box-arrow-right"></i> Salida
+                            </button>
+                        </td>
+                        <td sec:authorize="hasRole('ADMIN')">
+                            <a th:href="@{/empleados/historial(empleadoId=${e.id})}"
+                               class="btn btn-sm btn-outline-secondary me-1" title="Ver historial">
+                                <i class="bi bi-clock-history"></i>
+                            </a>
+                            <a th:href="@{/empleados/editar/{id}(id=${e.id})}"
+                               class="btn btn-sm btn-outline-primary me-1">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form th:action="@{/empleados/desactivar/{id}(id=${e.id})}"
+                                  method="post" class="d-inline"
+                                  onsubmit="return confirm('¿Desactivar este empleado?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-muted small">
+            Total: <strong th:text="${empleados.size()}">0</strong> empleados
+        </div>
+    </div>
+</div>
+
+<!-- Modal Marcación -->
+<div class="modal fade" id="modalMarcar" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header" id="modalHeader">
+                <h5 class="modal-title" id="modalTitulo">Registrar Marcación</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form th:action="@{/empleados/marcar}" method="post">
+                    <input type="hidden" name="empleadoId" id="inputEmpleadoId">
+                    <input type="hidden" name="tipo" id="inputTipo">
+                    <p class="mb-3">
+                        Empleado: <strong id="textoEmpleado"></strong>
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Observación (opcional)</label>
+                        <input type="text" name="observacion" class="form-control"
+                               placeholder="Ej: Llegada tardía...">
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn" id="btnConfirmar">
+                            <i class="bi bi-check-circle me-2"></i>Confirmar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.getElementById('modalMarcar').addEventListener('show.bs.modal', function (event) {
+        const btn = event.relatedTarget;
+        const empleadoId = btn.getAttribute('data-empleado-id');
+        const empleadoNombre = btn.getAttribute('data-empleado-nombre');
+        const tipo = btn.getAttribute('data-tipo');
+
+        document.getElementById('inputEmpleadoId').value = empleadoId;
+        document.getElementById('inputTipo').value = tipo;
+        document.getElementById('textoEmpleado').textContent = empleadoNombre;
+
+        const header = document.getElementById('modalHeader');
+        const titulo = document.getElementById('modalTitulo');
+        const btnConf = document.getElementById('btnConfirmar');
+
+        if (tipo === 'ENTRADA') {
+            header.className = 'modal-header bg-success text-white';
+            titulo.textContent = 'Registrar Entrada';
+            btnConf.className = 'btn btn-success';
+        } else {
+            header.className = 'modal-header bg-danger text-white';
+            titulo.textContent = 'Registrar Salida';
+            btnConf.className = 'btn btn-danger';
+        }
+    });
+</script>
+</body>
+</html>

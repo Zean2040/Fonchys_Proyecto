@@ -1,87 +1,379 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Nueva Venta - Fonchys Minimarket</title>
+    <title>Punto de Venta - Fonchys Minimarket</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; }
+        .pos-header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        .card-panel { border-radius: 12px; overflow: hidden; }
+        .product-info-bar { border-left: 4px solid #0d6efd; background: #f8f9ff; }
+        .cart-item td { vertical-align: middle; }
+        .qty-display {
+            display: inline-block;
+            min-width: 36px;
+            text-align: center;
+            font-weight: 700;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 2px 8px;
+        }
+        #totalCarrito { font-size: 2.2rem; font-weight: 800; letter-spacing: -1px; }
+        .btn-qty { width: 28px; height: 28px; padding: 0; line-height: 1; font-size: 0.85rem; }
+        .empty-cart-icon { font-size: 4rem; opacity: 0.15; }
+        .card-footer-total { background: linear-gradient(135deg, #155724, #1e7e34); }
+    </style>
 </head>
-<body class="bg-light">
+<body>
 
 <div th:replace="~{fragments/nav :: navbar}"></div>
 
-<div class="container py-4" style="max-width: 640px;">
-    <h2 class="fw-bold mb-4">
-        <i class="bi bi-cart-plus me-2 text-success"></i>Registrar Venta
-    </h2>
+<div class="container-fluid px-4 py-3" style="max-width: 1300px; margin: 0 auto;">
 
+    <!-- POS Header -->
+    <div class="pos-header text-white rounded-3 p-3 mb-4">
+        <div class="row align-items-center g-2">
+            <div class="col-auto">
+                <i class="bi bi-shop-window fs-5 me-2"></i>
+                <span class="fw-bold fs-5">Punto de Venta — Fonchys Minimarket</span>
+            </div>
+            <div class="col text-center d-none d-md-block">
+                <div id="reloj" class="fw-bold fs-6"></div>
+                <small class="text-white-50" id="fecha"></small>
+            </div>
+            <div class="col-auto text-end">
+                <span class="badge bg-white bg-opacity-25 px-3 py-2">
+                    <i class="bi bi-person-badge me-1"></i>
+                    <span sec:authentication="name">Cajero</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error alert -->
     <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
         <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${error}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-body">
-            <form th:action="@{/ventas/registrar}" method="post">
+    <div class="row g-4">
 
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Producto *</label>
-                    <select class="form-select form-select-lg" name="productoId" id="selectProducto"
-                            onchange="actualizarPrecio(this)" required>
-                        <option value="">-- Seleccione un producto --</option>
-                        <option th:each="p : ${productos}"
-                                th:value="${p.id}"
-                                th:text="${p.nombre + ' - S/. ' + #numbers.formatDecimal(p.precio, 1, 2) + ' (stock: ' + p.stock + ')'}"
-                                th:attr="data-precio=${p.precio}, data-stock=${p.stock}">
-                        </option>
-                    </select>
+        <!-- ====== IZQUIERDA: Selector de producto ====== -->
+        <div class="col-lg-5">
+            <div class="card card-panel border-0 shadow-sm h-100">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0 fw-semibold">
+                        <i class="bi bi-grid-3x3-gap me-2"></i>Seleccionar Producto
+                    </h5>
                 </div>
+                <div class="card-body p-4 d-flex flex-column gap-3">
 
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Cantidad *</label>
-                    <input type="number" class="form-control form-control-lg" name="cantidad"
-                           id="cantidad" min="1" value="1" required onchange="calcularTotal()">
-                </div>
-
-                <div class="card bg-light mb-4">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <span class="fw-semibold">Precio unitario:</span>
-                        <span class="text-muted" id="lblPrecio">S/. 0.00</span>
+                    <div>
+                        <label class="form-label text-muted small text-uppercase fw-semibold mb-1">Producto</label>
+                        <select id="selectProducto" class="form-select form-select-lg"
+                                onchange="mostrarInfoProducto()">
+                            <option value="">— Seleccione un producto —</option>
+                            <option th:each="p : ${productos}"
+                                    th:value="${p.id}"
+                                    th:text="${p.nombre}"
+                                    th:attr="data-precio=${p.precio},data-stock=${p.stock},data-nombre=${p.nombre}">
+                            </option>
+                        </select>
                     </div>
-                    <hr class="my-0">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <span class="fw-bold fs-5">TOTAL:</span>
-                        <span class="fw-bold fs-4 text-success" id="lblTotal">S/. 0.00</span>
-                    </div>
-                </div>
 
-                <button type="submit" class="btn btn-success btn-lg w-100">
-                    <i class="bi bi-check-circle me-2"></i>Confirmar Venta
-                </button>
-            </form>
+                    <!-- Info del producto seleccionado -->
+                    <div id="productoInfo" class="rounded-3 p-3 product-info-bar d-none">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold" id="infoNombre">—</div>
+                                <small class="text-muted">
+                                    Stock: <span id="infoStock" class="fw-semibold text-dark">0</span> unidades
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <div class="text-muted small">Precio unitario</div>
+                                <div class="fs-5 fw-bold text-primary" id="infoPrecio">S/. 0.00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label text-muted small text-uppercase fw-semibold mb-1">Cantidad</label>
+                        <div class="input-group input-group-lg">
+                            <button class="btn btn-outline-secondary" type="button" onclick="cambiarCantidad(-1)">
+                                <i class="bi bi-dash-lg"></i>
+                            </button>
+                            <input type="number" id="cantidad" class="form-control text-center fw-bold"
+                                   min="1" value="1" oninput="actualizarSubtotal()">
+                            <button class="btn btn-outline-secondary" type="button" onclick="cambiarCantidad(1)">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-light rounded-3 p-3 d-flex justify-content-between align-items-center">
+                        <span class="text-muted fw-semibold">Subtotal estimado</span>
+                        <span id="subtotalPreview" class="fw-bold text-success fs-4">S/. 0.00</span>
+                    </div>
+
+                    <button class="btn btn-primary btn-lg mt-auto" onclick="agregarAlCarrito()" type="button">
+                        <i class="bi bi-plus-circle me-2"></i>Agregar al Carrito
+                    </button>
+
+                </div>
+            </div>
         </div>
-    </div>
 
-    <a th:href="@{/ventas}" class="btn btn-outline-secondary mt-3">
-        <i class="bi bi-arrow-left me-2"></i>Volver a Ventas
-    </a>
+        <!-- ====== DERECHA: Carrito ====== -->
+        <div class="col-lg-7 d-flex flex-column gap-3">
+            <div class="card card-panel border-0 shadow-sm flex-grow-1">
+                <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-semibold">
+                        <i class="bi bi-cart3 me-2"></i>Carrito de Compras
+                    </h5>
+                    <span id="contadorItems" class="badge bg-warning text-dark px-3 py-2 rounded-pill">0 items</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3" style="width:40px">#</th>
+                                    <th>Producto</th>
+                                    <th class="text-center" style="width:130px">Cantidad</th>
+                                    <th class="text-end" style="width:100px">P. Unit.</th>
+                                    <th class="text-end" style="width:110px">Subtotal</th>
+                                    <th style="width:44px"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="carritoBody">
+                                <tr id="filaVacia">
+                                    <td colspan="6" class="text-center py-5">
+                                        <i class="bi bi-cart-x empty-cart-icon d-block mx-auto mb-3"></i>
+                                        <div class="text-muted fw-semibold">El carrito está vacío</div>
+                                        <small class="text-muted">Selecciona un producto para comenzar</small>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer card-footer-total text-white p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="small text-white-50 text-uppercase fw-semibold">Total a pagar</div>
+                            <div class="small text-white-50" id="resumenItems">0 unidades</div>
+                        </div>
+                        <div id="totalCarrito">S/. 0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="row g-2">
+                <div class="col-4">
+                    <button class="btn btn-outline-danger w-100 py-3" onclick="limpiarCarrito()" type="button">
+                        <i class="bi bi-trash3 me-1"></i>Limpiar
+                    </button>
+                </div>
+                <div class="col-8">
+                    <form id="formVenta" th:action="@{/ventas/registrar}" method="post">
+                        <div id="itemsContainer"></div>
+                        <button type="submit" id="btnConfirmar"
+                                class="btn btn-success btn-lg w-100 py-3" disabled>
+                            <i class="bi bi-check-circle me-2"></i>Confirmar Venta
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    function actualizarPrecio(select) {
-        const opt = select.options[select.selectedIndex];
-        const precio = parseFloat(opt.getAttribute('data-precio') || 0);
-        document.getElementById('lblPrecio').textContent = 'S/. ' + precio.toFixed(2);
-        calcularTotal();
+    // Construir mapa de productos desde los data-attributes del select
+    const productosData = {};
+    document.querySelectorAll('#selectProducto option[value]').forEach(opt => {
+        if (opt.value) {
+            productosData[opt.value] = {
+                id: opt.value,
+                nombre: opt.getAttribute('data-nombre') || opt.text,
+                precio: parseFloat(opt.getAttribute('data-precio')) || 0,
+                stock: parseInt(opt.getAttribute('data-stock')) || 0
+            };
+        }
+    });
+
+    let carrito = [];
+
+    // Reloj en tiempo real
+    function actualizarReloj() {
+        const ahora = new Date();
+        const reloj = document.getElementById('reloj');
+        const fecha = document.getElementById('fecha');
+        if (reloj) reloj.textContent = ahora.toLocaleTimeString('es-PE');
+        if (fecha) fecha.textContent = ahora.toLocaleDateString('es-PE', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+    }
+    setInterval(actualizarReloj, 1000);
+    actualizarReloj();
+
+    function mostrarInfoProducto() {
+        const sel = document.getElementById('selectProducto');
+        const info = document.getElementById('productoInfo');
+        if (!sel.value) {
+            info.classList.add('d-none');
+            document.getElementById('subtotalPreview').textContent = 'S/. 0.00';
+            return;
+        }
+        const p = productosData[sel.value];
+        document.getElementById('infoNombre').textContent = p.nombre;
+        document.getElementById('infoStock').textContent = p.stock;
+        document.getElementById('infoPrecio').textContent = 'S/. ' + p.precio.toFixed(2);
+        info.classList.remove('d-none');
+        actualizarSubtotal();
     }
 
-    function calcularTotal() {
-        const select = document.getElementById('selectProducto');
-        const opt = select.options[select.selectedIndex];
-        const precio = parseFloat(opt.getAttribute('data-precio') || 0);
-        const cantidad = parseInt(document.getElementById('cantidad').value || 0);
-        document.getElementById('lblTotal').textContent = 'S/. ' + (precio * cantidad).toFixed(2);
+    function actualizarSubtotal() {
+        const sel = document.getElementById('selectProducto');
+        const cantidad = parseInt(document.getElementById('cantidad').value) || 0;
+        if (!sel.value || !productosData[sel.value]) {
+            document.getElementById('subtotalPreview').textContent = 'S/. 0.00';
+            return;
+        }
+        const precio = productosData[sel.value].precio;
+        document.getElementById('subtotalPreview').textContent = 'S/. ' + (precio * cantidad).toFixed(2);
+    }
+
+    function cambiarCantidad(delta) {
+        const input = document.getElementById('cantidad');
+        input.value = Math.max(1, (parseInt(input.value) || 1) + delta);
+        actualizarSubtotal();
+    }
+
+    function agregarAlCarrito() {
+        const sel = document.getElementById('selectProducto');
+        const id = sel.value;
+        const cantidad = parseInt(document.getElementById('cantidad').value) || 1;
+        if (!id) { alert('Selecciona un producto primero.'); return; }
+
+        const p = productosData[id];
+        const existente = carrito.find(i => i.productoId === id);
+
+        if (existente) {
+            const nueva = existente.cantidad + cantidad;
+            if (nueva > p.stock) { alert('Stock insuficiente. Disponible: ' + p.stock); return; }
+            existente.cantidad = nueva;
+        } else {
+            if (cantidad > p.stock) { alert('Stock insuficiente. Disponible: ' + p.stock); return; }
+            carrito.push({ productoId: id, nombre: p.nombre, precio: p.precio, cantidad: cantidad, stock: p.stock });
+        }
+
+        sel.value = '';
+        document.getElementById('cantidad').value = 1;
+        document.getElementById('productoInfo').classList.add('d-none');
+        document.getElementById('subtotalPreview').textContent = 'S/. 0.00';
+        renderizarCarrito();
+    }
+
+    function cambiarCantidadCarrito(idx, delta) {
+        const item = carrito[idx];
+        const nueva = item.cantidad + delta;
+        if (nueva < 1) return;
+        if (nueva > item.stock) { alert('Stock insuficiente. Disponible: ' + item.stock); return; }
+        item.cantidad = nueva;
+        renderizarCarrito();
+    }
+
+    function eliminarItem(idx) {
+        carrito.splice(idx, 1);
+        renderizarCarrito();
+    }
+
+    function limpiarCarrito() {
+        if (!carrito.length) return;
+        if (confirm('¿Limpiar todos los productos del carrito?')) {
+            carrito = [];
+            renderizarCarrito();
+        }
+    }
+
+    function renderizarCarrito() {
+        const tbody = document.getElementById('carritoBody');
+        const itemsContainer = document.getElementById('itemsContainer');
+        const btnConfirmar = document.getElementById('btnConfirmar');
+        const contadorItems = document.getElementById('contadorItems');
+        const resumenItems = document.getElementById('resumenItems');
+
+        tbody.innerHTML = '';
+        itemsContainer.innerHTML = '';
+
+        if (!carrito.length) {
+            tbody.innerHTML = `
+                <tr><td colspan="6" class="text-center py-5">
+                    <i class="bi bi-cart-x empty-cart-icon d-block mx-auto mb-3"></i>
+                    <div class="text-muted fw-semibold">El carrito está vacío</div>
+                    <small class="text-muted">Selecciona un producto para comenzar</small>
+                </td></tr>`;
+            document.getElementById('totalCarrito').textContent = 'S/. 0.00';
+            contadorItems.textContent = '0 items';
+            resumenItems.textContent = '0 unidades';
+            btnConfirmar.disabled = true;
+            return;
+        }
+
+        let total = 0;
+        let totalUnidades = 0;
+
+        carrito.forEach((item, i) => {
+            const subtotal = item.precio * item.cantidad;
+            total += subtotal;
+            totalUnidades += item.cantidad;
+
+            const tr = document.createElement('tr');
+            tr.className = 'cart-item';
+            tr.innerHTML = `
+                <td class="ps-3 text-muted small">${i + 1}</td>
+                <td>
+                    <div class="fw-semibold">${escHtml(item.nombre)}</div>
+                    <small class="text-muted">S/. ${item.precio.toFixed(2)} c/u</small>
+                </td>
+                <td class="text-center">
+                    <div class="d-flex align-items-center justify-content-center gap-1">
+                        <button class="btn btn-outline-secondary btn-qty" onclick="cambiarCantidadCarrito(${i},-1)" type="button">-</button>
+                        <span class="qty-display">${item.cantidad}</span>
+                        <button class="btn btn-outline-secondary btn-qty" onclick="cambiarCantidadCarrito(${i},1)" type="button">+</button>
+                    </div>
+                </td>
+                <td class="text-end">S/. ${item.precio.toFixed(2)}</td>
+                <td class="text-end fw-bold text-success">S/. ${subtotal.toFixed(2)}</td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-outline-danger" onclick="eliminarItem(${i})" type="button">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </td>`;
+            tbody.appendChild(tr);
+
+            // Inputs ocultos para el form POST
+            itemsContainer.innerHTML +=
+                `<input type="hidden" name="items[${i}].productoId" value="${item.productoId}">` +
+                `<input type="hidden" name="items[${i}].cantidad" value="${item.cantidad}">`;
+        });
+
+        document.getElementById('totalCarrito').textContent = 'S/. ' + total.toFixed(2);
+        contadorItems.textContent = carrito.length + ' item' + (carrito.length !== 1 ? 's' : '');
+        resumenItems.textContent = totalUnidades + ' unidad' + (totalUnidades !== 1 ? 'es' : '');
+        btnConfirmar.disabled = false;
+    }
+
+    function escHtml(str) {
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 </script>
 </body>

@@ -20,6 +20,9 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
     @Query("SELECT p FROM Producto p WHERE p.stock <= :umbral AND p.activo = true ORDER BY p.stock ASC")
     List<Producto> findByStockBajoUmbral(@Param("umbral") int umbral);
 
+    @Query("SELECT p FROM Producto p WHERE p.activo = true AND p.stock <= p.stockMinimo ORDER BY p.stock ASC")
+    List<Producto> findProductosStockBajoUmbralPropio();
+
     @Query("SELECT p FROM Producto p WHERE p.proveedor.id = :proveedorId AND p.stock <= :umbral AND p.activo = true ORDER BY p.stock ASC")
     List<Producto> findByProveedorIdAndStockBajo(@Param("proveedorId") Long proveedorId, @Param("umbral") int umbral);
 

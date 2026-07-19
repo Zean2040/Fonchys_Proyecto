@@ -3,6 +3,7 @@ package com.fonchys.minimarket.controller;
 import com.fonchys.minimarket.model.Categoria;
 import com.fonchys.minimarket.model.Producto;
 import com.fonchys.minimarket.model.Proveedor;
+import com.fonchys.minimarket.model.UnidadMedida;
 import com.fonchys.minimarket.repository.CategoriaRepository;
 import com.fonchys.minimarket.repository.ProveedorRepository;
 import com.fonchys.minimarket.service.IProductoService;
@@ -37,27 +38,29 @@ public class ProductoController {
     }
 
     @GetMapping("/nuevo")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ALMACENERO')")
     public String formNuevo(Model model) {
         model.addAttribute("producto", new Producto());
         model.addAttribute("categorias", categoriaRepository.findAll());
         model.addAttribute("proveedores", proveedorRepository.findAll());
+        model.addAttribute("unidades", UnidadMedida.values());
         return "productos/form";
     }
 
     @GetMapping("/editar/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ALMACENERO')")
     public String formEditar(@PathVariable Long id, Model model) {
         Producto producto = productoService.buscarPorId(id)
             .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
         model.addAttribute("producto", producto);
         model.addAttribute("categorias", categoriaRepository.findAll());
         model.addAttribute("proveedores", proveedorRepository.findAll());
+        model.addAttribute("unidades", UnidadMedida.values());
         return "productos/form";
     }
 
     @PostMapping("/guardar")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ALMACENERO')")
     public String guardar(@Valid @ModelAttribute Producto producto,
                           BindingResult result,
                           @RequestParam(required = false) Long categoriaId,
@@ -67,6 +70,7 @@ public class ProductoController {
         if (result.hasErrors()) {
             model.addAttribute("categorias", categoriaRepository.findAll());
             model.addAttribute("proveedores", proveedorRepository.findAll());
+            model.addAttribute("unidades", UnidadMedida.values());
             return "productos/form";
         }
         if (categoriaId != null) {
@@ -88,7 +92,7 @@ public class ProductoController {
     }
 
     @PostMapping("/desactivar/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ALMACENERO')")
     public String desactivar(@PathVariable Long id, RedirectAttributes flash) {
         productoService.desactivar(id);
         flash.addFlashAttribute("exito", "Producto desactivado correctamente");

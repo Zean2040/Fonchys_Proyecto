@@ -14,6 +14,7 @@ public interface IProductoService {
     List<Producto> listarPorCategoria(Long categoriaId);
 
     List<Producto> listarStockBajo(int umbral);
+    List<Producto> listarStockBajoIndividual();
     List<Producto> listarStockBajoPorProveedor(Long proveedorId, int umbral);
 
     Optional<Producto> buscarPorId(Long id);

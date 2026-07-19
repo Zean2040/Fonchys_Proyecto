@@ -70,6 +70,12 @@ public class ProductoServiceImpl implements IProductoService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Producto> listarStockBajoIndividual() {
+        return productoRepository.findProductosStockBajoUmbralPropio();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Producto> listarStockBajoPorProveedor(Long proveedorId, int umbral) {
         return productoRepository.findByProveedorIdAndStockBajo(proveedorId, umbral);
     }
@@ -104,7 +110,11 @@ public class ProductoServiceImpl implements IProductoService {
         existente.setNombre(StringUtils.normalizeSpace(datos.getNombre()));
         existente.setDescripcion(datos.getDescripcion());
         existente.setPrecio(datos.getPrecio());
+        existente.setPrecioCompra(datos.getPrecioCompra());
         existente.setStock(datos.getStock());
+        existente.setStockMinimo(datos.getStockMinimo());
+        existente.setUnidadMedida(datos.getUnidadMedida());
+        existente.setContenidoNeto(datos.getContenidoNeto());
         existente.setCategoria(datos.getCategoria());
         existente.setProveedor(datos.getProveedor());
         existente.setCodigoBarras(datos.getCodigoBarras());

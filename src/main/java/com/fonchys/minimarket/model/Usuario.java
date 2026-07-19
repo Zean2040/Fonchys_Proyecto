@@ -27,18 +27,21 @@ public class Usuario {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @NotBlank
     @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private Rol rol = Rol.CAJERO;
 
     @Column(nullable = false)
     private Boolean activo = true;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "empleado_id", unique = true)
+    private Empleado empleado;
+
     public enum Rol {
-        ADMIN, CAJERO
+        ADMIN, CAJERO, ALMACENERO
     }
 }

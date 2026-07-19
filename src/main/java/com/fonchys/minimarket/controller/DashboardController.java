@@ -20,7 +20,7 @@ public class DashboardController {
     public String index(Model model) {
         model.addAttribute("totalVentasHoy", ventaService.totalVentasHoy());
         model.addAttribute("cantVentasHoy", ventaService.listarVentasHoy().size());
-        model.addAttribute("productosStockBajo", productoService.listarStockBajo(5));
+        model.addAttribute("productosStockBajo", productoService.listarStockBajoIndividual());
         model.addAttribute("totalProductos", productoService.listarActivos().size());
         return "dashboard/index";
     }

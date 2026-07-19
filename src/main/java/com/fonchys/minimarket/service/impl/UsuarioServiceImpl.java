@@ -1,5 +1,6 @@
 package com.fonchys.minimarket.service.impl;
 
+import com.fonchys.minimarket.model.Empleado;
 import com.fonchys.minimarket.model.Usuario;
 import com.fonchys.minimarket.repository.UsuarioRepository;
 import com.fonchys.minimarket.service.IUsuarioService;
@@ -14,8 +15,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -69,11 +72,41 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
     @Override
     @Transactional
+    public Usuario actualizar(Long id, String nombre, String email, Usuario.Rol rol,
+                              Empleado empleado, String nuevaPassword) {
+        Usuario usuario = usuarioRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + id));
+        usuario.setNombre(nombre);
+        usuario.setEmail(email);
+        usuario.setRol(rol);
+        usuario.setEmpleado(empleado);
+        if (nuevaPassword != null && !nuevaPassword.isBlank()) {
+            usuario.setPassword(passwordEncoder.encode(nuevaPassword));
+        }
+        Usuario actualizado = usuarioRepository.save(usuario);
+        logger.info("Usuario actualizado: id={}, email={}", actualizado.getId(), actualizado.getEmail());
+        return actualizado;
+    }
+
+    @Override
+    @Transactional
     public void desactivar(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + id));
         usuario.setActivo(false);
         usuarioRepository.save(usuario);
         logger.info("Usuario desactivado: id={}", id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Set<Long> empleadoIdsConCuenta() {
+        return new HashSet<>(usuarioRepository.findAllEmpleadoIds());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existeEmailEnOtroUsuario(String email, Long idActual) {
+        return usuarioRepository.existsByEmailAndIdNot(email, idActual);
     }
 }

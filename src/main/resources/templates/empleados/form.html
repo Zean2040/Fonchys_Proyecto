@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo} + ' - Fonchys Minimarket'">Empleado</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<div class="container py-4" style="max-width: 640px;">
+    <div class="d-flex align-items-center mb-4">
+        <a th:href="@{/empleados}" class="btn btn-outline-secondary btn-sm me-3">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-person-badge me-2 text-primary"></i>
+            <span th:text="${titulo}">Empleado</span>
+        </h2>
+    </div>
+
+    <form th:action="@{/empleados/guardar}" th:object="${empleado}" method="post">
+        <input type="hidden" th:field="*{id}">
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white py-3">
+                <h6 class="mb-0 fw-semibold"><i class="bi bi-person me-2"></i>Datos del Empleado</h6>
+            </div>
+            <div class="card-body p-4">
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" th:field="*{nombre}" class="form-control"
+                               th:classappend="${#fields.hasErrors('nombre')} ? 'is-invalid'"
+                               placeholder="Nombre">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('nombre')}"
+                             th:errors="*{nombre}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Apellido <span class="text-danger">*</span></label>
+                        <input type="text" th:field="*{apellido}" class="form-control"
+                               th:classappend="${#fields.hasErrors('apellido')} ? 'is-invalid'"
+                               placeholder="Apellido">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('apellido')}"
+                             th:errors="*{apellido}"></div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Cargo <span class="text-danger">*</span></label>
+                    <input type="text" th:field="*{cargo}" class="form-control"
+                           th:classappend="${#fields.hasErrors('cargo')} ? 'is-invalid'"
+                           placeholder="Ej: Cajero, Almacenero, Reponedor...">
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('cargo')}"
+                         th:errors="*{cargo}"></div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Teléfono</label>
+                        <input type="text" th:field="*{telefono}" class="form-control"
+                               placeholder="Ej: 987654321">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Email personal</label>
+                        <input type="email" th:field="*{email}" class="form-control"
+                               th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+                               placeholder="empleado@correo.com">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}"
+                             th:errors="*{email}"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Aviso si el empleado ya tiene cuenta -->
+            <div th:if="${tieneCuenta}" class="card-footer bg-success bg-opacity-10 border-0 px-4 py-3">
+                <small class="text-success">
+                    <i class="bi bi-person-check me-1"></i>
+                    Este empleado ya tiene una cuenta de sistema.
+                    <a th:href="@{/usuarios}" class="text-success fw-semibold">Ir a Usuarios</a>
+                    para gestionar su acceso.
+                </small>
+            </div>
+            <div th:unless="${tieneCuenta or empleado.id == null}" class="card-footer bg-light border-0 px-4 py-3">
+                <small class="text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Para darle acceso al sistema, ve a
+                    <a th:href="@{/usuarios/nuevo(empleadoId=${empleado.id})}" class="fw-semibold">
+                        Crear cuenta para este empleado
+                    </a>
+                </small>
+            </div>
+
+            <div class="card-footer bg-transparent d-flex gap-2 p-4 border-top">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-floppy me-2"></i>Guardar
+                </button>
+                <a th:href="@{/empleados}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

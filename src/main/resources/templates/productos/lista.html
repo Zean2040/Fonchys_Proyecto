@@ -16,7 +16,7 @@
         <h2 class="fw-bold mb-0">
             <i class="bi bi-box-seam me-2 text-primary"></i>Productos
         </h2>
-        <a th:href="@{/productos/nuevo}" class="btn btn-primary" sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/productos/nuevo}" class="btn btn-primary" sec:authorize="hasAnyRole('ADMIN', 'ALMACENERO')">
             <i class="bi bi-plus-circle me-2"></i>Nuevo Producto
         </a>
     </div>
@@ -50,58 +50,91 @@
     <!-- Tabla de productos -->
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-dark">
-                    <tr>
-                        <th>#</th>
-                        <th>Nombre</th>
-                        <th>Categoría</th>
-                        <th>Precio (S/.)</th>
-                        <th>Stock</th>
-                        <th>Estado</th>
-                        <th sec:authorize="hasRole('ADMIN')">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:if="${#lists.isEmpty(productos)}">
-                        <td colspan="7" class="text-center text-muted py-4">
-                            <i class="bi bi-inbox fs-3 d-block mb-2"></i>No hay productos registrados
-                        </td>
-                    </tr>
-                    <tr th:each="p : ${productos}">
-                        <td th:text="${p.id}"></td>
-                        <td>
-                            <span class="fw-semibold" th:text="${p.nombre}"></span>
-                            <small class="text-muted d-block" th:text="${p.descripcion}"></small>
-                        </td>
-                        <td>
-                            <span class="badge bg-secondary" th:text="${p.categoria != null ? p.categoria.nombre : 'Sin categoría'}"></span>
-                        </td>
-                        <td class="fw-bold text-success" th:text="${#numbers.formatDecimal(p.precio, 1, 2)}"></td>
-                        <td>
-                            <span th:class="${p.stock <= 5} ? 'badge bg-danger' : 'badge bg-success'"
-                                  th:text="${p.stock}"></span>
-                        </td>
-                        <td>
-                            <span th:if="${p.activo}" class="badge bg-success">Activo</span>
-                            <span th:unless="${p.activo}" class="badge bg-secondary">Inactivo</span>
-                        </td>
-                        <td sec:authorize="hasRole('ADMIN')">
-                            <a th:href="@{/productos/editar/{id}(id=${p.id})}"
-                               class="btn btn-sm btn-outline-primary me-1">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <form th:action="@{/productos/desactivar/{id}(id=${p.id})}"
-                                  method="post" class="d-inline"
-                                  onsubmit="return confirm('¿Desactivar este producto?')">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Nombre</th>
+                            <th>Presentación</th>
+                            <th>Categoría</th>
+                            <th class="text-end">P. Compra</th>
+                            <th class="text-end">P. Venta</th>
+                            <th class="text-end">Ganancia</th>
+                            <th class="text-center">Stock</th>
+                            <th>Estado</th>
+                            <th sec:authorize="hasAnyRole('ADMIN', 'ALMACENERO')">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(productos)}">
+                            <td colspan="10" class="text-center text-muted py-4">
+                                <i class="bi bi-inbox fs-3 d-block mb-2"></i>No hay productos registrados
+                            </td>
+                        </tr>
+                        <tr th:each="p : ${productos}">
+                            <td class="text-muted small" th:text="${p.id}"></td>
+                            <td>
+                                <span class="fw-semibold" th:text="${p.nombre}"></span>
+                                <small class="text-muted d-block"
+                                       th:text="${p.descripcion}"
+                                       th:if="${p.descripcion != null and !#strings.isEmpty(p.descripcion)}"></small>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border" th:text="${p.presentacion}"></span>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary"
+                                      th:text="${p.categoria != null ? p.categoria.nombre : 'Sin categoría'}"></span>
+                            </td>
+                            <!-- Precio de compra -->
+                            <td class="text-end text-muted small">
+                                <span th:if="${p.precioCompra != null}"
+                                      th:text="'S/. ' + ${#numbers.formatDecimal(p.precioCompra, 1, 2)}"></span>
+                                <span th:unless="${p.precioCompra != null}" class="text-muted">—</span>
+                            </td>
+                            <!-- Precio de venta -->
+                            <td class="text-end fw-bold text-success"
+                                th:text="'S/. ' + ${#numbers.formatDecimal(p.precio, 1, 2)}"></td>
+                            <!-- Ganancia por unidad -->
+                            <td class="text-end">
+                                <span th:if="${p.ganancia != null}">
+                                    <span class="fw-semibold text-success"
+                                          th:text="'S/. ' + ${#numbers.formatDecimal(p.ganancia, 1, 2)}"></span>
+                                    <br>
+                                    <small class="badge bg-success bg-opacity-10 text-success"
+                                           th:text="${#numbers.formatDecimal(p.margenPorcentaje, 1, 1)} + '%'"></small>
+                                </span>
+                                <span th:unless="${p.ganancia != null}" class="text-muted">—</span>
+                            </td>
+                            <!-- Stock con umbral por producto -->
+                            <td class="text-center">
+                                <span th:class="${p.stock <= (p.stockMinimo != null ? p.stockMinimo : 5)} ? 'badge bg-danger' : 'badge bg-success'"
+                                      th:text="${p.stock}"></span>
+                                <small class="text-muted d-block"
+                                       th:text="'mín: ' + (p.stockMinimo != null ? p.stockMinimo : 5)"></small>
+                            </td>
+                            <td>
+                                <span th:if="${p.activo}" class="badge bg-success">Activo</span>
+                                <span th:unless="${p.activo}" class="badge bg-secondary">Inactivo</span>
+                            </td>
+                            <td sec:authorize="hasAnyRole('ADMIN', 'ALMACENERO')">
+                                <a th:href="@{/productos/editar/{id}(id=${p.id})}"
+                                   class="btn btn-sm btn-outline-primary me-1">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form th:action="@{/productos/desactivar/{id}(id=${p.id})}"
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('¿Desactivar este producto?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
         <div class="card-footer text-muted small">
             Total: <strong th:text="${productos.size()}">0</strong> productos

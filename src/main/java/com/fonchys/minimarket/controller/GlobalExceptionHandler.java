@@ -11,10 +11,11 @@ public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    @ExceptionHandler(RuntimeException.class)
-    public String handleRuntimeException(RuntimeException ex, Model model) {
-        logger.error("Error en la aplicación: {}", ex.getMessage());
-        model.addAttribute("errorMensaje", ex.getMessage());
+    @ExceptionHandler(Exception.class)
+    public String handleException(Exception ex, Model model) {
+        logger.error("Error en la aplicación [{}]: {}", ex.getClass().getSimpleName(), ex.getMessage(), ex);
+        String msg = ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName();
+        model.addAttribute("errorMensaje", msg);
         return "error";
     }
 }
