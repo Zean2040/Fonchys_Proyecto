@@ -14,7 +14,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-
 @Controller
 @RequestMapping("/ventas")
 @RequiredArgsConstructor
@@ -44,7 +43,7 @@ public class VentaController {
                             RedirectAttributes flash) {
         try {
             if (dto.getItems() == null || dto.getItems().isEmpty()) {
-                flash.addFlashAttribute("error", "El carrito está vacío. Agrega al menos un producto.");
+                flash.addFlashAttribute("error", "El carrito esta vacio. Agrega al menos un producto.");
                 return "redirect:/ventas/nueva";
             }
             Venta venta = ventaService.registrarVenta(dto, userDetails.getUsername());
