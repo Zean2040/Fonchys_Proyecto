@@ -3,378 +3,981 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Punto de Venta - Fonchys Minimarket</title>
+    <title>Punto de Venta — Fonchys Minimarket</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        body { background: #f0f2f5; }
-        .pos-header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
-        .card-panel { border-radius: 12px; overflow: hidden; }
-        .product-info-bar { border-left: 4px solid #0d6efd; background: #f8f9ff; }
-        .cart-item td { vertical-align: middle; }
-        .qty-display {
-            display: inline-block;
-            min-width: 36px;
-            text-align: center;
-            font-weight: 700;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            padding: 2px 8px;
+        :root {
+            --pos-dark:    #0f1117;
+            --pos-surface: #1a1d27;
+            --pos-border:  #2a2d3e;
+            --pos-accent:  #f97316;
+            --pos-green:   #22c55e;
+            --pos-red:     #ef4444;
+            --pos-blue:    #3b82f6;
         }
-        #totalCarrito { font-size: 2.2rem; font-weight: 800; letter-spacing: -1px; }
-        .btn-qty { width: 28px; height: 28px; padding: 0; line-height: 1; font-size: 0.85rem; }
-        .empty-cart-icon { font-size: 4rem; opacity: 0.15; }
-        .card-footer-total { background: linear-gradient(135deg, #155724, #1e7e34); }
+
+        html, body { height: 100%; margin: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--pos-dark);
+            color: #e2e8f0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── NAV ── */
+        .pos-navbar {
+            background: #090b10;
+            border-bottom: 1px solid var(--pos-border);
+            padding: 0 20px;
+            height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+        .pos-brand { color: var(--pos-accent); font-weight: 900; font-size: 16px; letter-spacing: -.3px; }
+        .pos-nav-links { display: flex; gap: 2px; }
+        .pos-nav-link {
+            color: #94a3b8;
+            font-size: 12.5px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background .15s, color .15s;
+        }
+        .pos-nav-link:hover { background: rgba(255,255,255,.07); color: #e2e8f0; }
+        .pos-nav-link.active { background: rgba(249,115,22,.15); color: var(--pos-accent); }
+        .pos-nav-user {
+            color: #64748b;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ── POS HEADER ── */
+        .pos-header {
+            background: var(--pos-surface);
+            border-bottom: 1px solid var(--pos-border);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .pos-header-title { font-weight: 800; font-size: 14px; color: #f1f5f9; display: flex; align-items: center; gap: 8px; }
+        .pos-header-clock { text-align: center; }
+        .pos-clock-time { font-size: 20px; font-weight: 800; letter-spacing: 2px; color: var(--pos-green); font-variant-numeric: tabular-nums; }
+        .pos-clock-date { font-size: 11px; color: #64748b; text-transform: capitalize; }
+        .pos-cashier-badge {
+            background: rgba(249,115,22,.12);
+            border: 1px solid rgba(249,115,22,.25);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 12px;
+            color: var(--pos-accent);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ── LAYOUT ── */
+        .pos-main {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 0;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* ── LEFT PANEL: PRODUCTOS ── */
+        .panel-products {
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--pos-border);
+            overflow: hidden;
+        }
+
+        .search-zone {
+            padding: 14px 16px 12px;
+            background: var(--pos-surface);
+            border-bottom: 1px solid var(--pos-border);
+            flex-shrink: 0;
+        }
+        .search-input-wrap {
+            position: relative;
+        }
+        .search-input {
+            width: 100%;
+            background: var(--pos-dark);
+            border: 1.5px solid var(--pos-border);
+            border-radius: 8px;
+            color: #f1f5f9;
+            font-size: 15px;
+            padding: 10px 40px 10px 42px;
+            outline: none;
+            transition: border-color .2s;
+        }
+        .search-input:focus { border-color: var(--pos-accent); }
+        .search-input::placeholder { color: #475569; }
+        .search-icon {
+            position: absolute;
+            left: 14px; top: 50%;
+            transform: translateY(-50%);
+            color: #475569;
+            font-size: 16px;
+            pointer-events: none;
+        }
+        .search-clear {
+            position: absolute;
+            right: 12px; top: 50%;
+            transform: translateY(-50%);
+            color: #475569;
+            cursor: pointer;
+            font-size: 14px;
+            display: none;
+        }
+        .search-hint { font-size: 11px; color: #475569; margin-top: 6px; }
+
+        /* ── CATEGORY TABS ── */
+        .cat-bar {
+            padding: 10px 16px;
+            background: var(--pos-surface);
+            border-bottom: 1px solid var(--pos-border);
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+        .cat-btn {
+            background: transparent;
+            border: 1px solid var(--pos-border);
+            border-radius: 100px;
+            color: #94a3b8;
+            font-size: 12px;
+            padding: 4px 12px;
+            cursor: pointer;
+            transition: all .15s;
+            white-space: nowrap;
+        }
+        .cat-btn:hover { border-color: #475569; color: #e2e8f0; }
+        .cat-btn.active {
+            background: var(--pos-accent);
+            border-color: var(--pos-accent);
+            color: white;
+            font-weight: 600;
+        }
+
+        /* ── PRODUCT GRID ── */
+        .product-grid-wrap {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px 16px;
+        }
+        .product-grid-wrap::-webkit-scrollbar { width: 4px; }
+        .product-grid-wrap::-webkit-scrollbar-track { background: transparent; }
+        .product-grid-wrap::-webkit-scrollbar-thumb { background: var(--pos-border); border-radius: 2px; }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        .product-card {
+            background: var(--pos-surface);
+            border: 1.5px solid var(--pos-border);
+            border-radius: 10px;
+            padding: 14px 12px 12px;
+            cursor: pointer;
+            transition: border-color .15s, transform .1s, background .15s;
+            user-select: none;
+            position: relative;
+        }
+        .product-card:hover {
+            border-color: var(--pos-accent);
+            background: rgba(249,115,22,.05);
+            transform: translateY(-1px);
+        }
+        .product-card:active { transform: scale(.97); }
+        .product-card.out-of-stock {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+        .product-card.out-of-stock:hover { transform: none; border-color: var(--pos-border); background: var(--pos-surface); }
+
+        .pc-cat-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            margin-bottom: 8px;
+        }
+        .pc-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 2px;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .pc-sub { font-size: 11px; color: #64748b; margin-bottom: 8px; }
+        .pc-price {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--pos-green);
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -.3px;
+        }
+        .pc-stock-badge {
+            position: absolute;
+            top: 8px; right: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 100px;
+        }
+        .stock-ok { background: rgba(34,197,94,.15); color: var(--pos-green); }
+        .stock-low { background: rgba(249,115,22,.2); color: var(--pos-accent); }
+        .stock-out { background: rgba(239,68,68,.15); color: var(--pos-red); }
+        .pc-add-hint {
+            font-size: 10px;
+            color: #475569;
+            margin-top: 4px;
+        }
+
+        .no-results {
+            grid-column: 1/-1;
+            text-align: center;
+            padding: 48px 20px;
+            color: #475569;
+        }
+        .no-results i { font-size: 40px; margin-bottom: 10px; display: block; }
+
+        /* ── RIGHT PANEL: CARRITO + PAGO ── */
+        .panel-cart {
+            display: flex;
+            flex-direction: column;
+            background: #f8fafc;
+            overflow: hidden;
+        }
+
+        /* Cart header */
+        .cart-header {
+            background: #1e293b;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .cart-title { font-weight: 800; font-size: 14px; color: #f1f5f9; }
+        .cart-count {
+            background: var(--pos-accent);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 100px;
+        }
+
+        /* Ticket area */
+        .ticket-area {
+            flex: 1;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+        .ticket-area::-webkit-scrollbar { width: 3px; }
+        .ticket-area::-webkit-scrollbar-thumb { background: #cbd5e1; }
+
+        .ticket-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #94a3b8;
+            padding: 40px;
+            text-align: center;
+        }
+        .ticket-empty i { font-size: 52px; margin-bottom: 12px; opacity: .3; }
+        .ticket-empty p { font-size: 13.5px; margin: 0; }
+
+        /* Ticket items */
+        .ticket-items { padding: 0; }
+        .ticket-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 4px;
+            padding: 10px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            align-items: center;
+        }
+        .ticket-item:last-child { border-bottom: none; }
+        .ti-name { font-size: 13px; font-weight: 600; color: #1e293b; }
+        .ti-sub { font-size: 11.5px; color: #64748b; margin-top: 1px; }
+        .ti-subtotal { font-size: 14px; font-weight: 800; color: #1e293b; text-align: right; font-variant-numeric: tabular-nums; }
+        .ti-controls { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+        .qty-btn {
+            width: 24px; height: 24px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background: white;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all .1s;
+            flex-shrink: 0;
+        }
+        .qty-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+        .qty-num {
+            min-width: 28px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 800;
+            color: #1e293b;
+        }
+        .ti-remove {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+            color: #cbd5e1;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px;
+            transition: color .15s, background .15s;
+        }
+        .ti-remove:hover { color: var(--pos-red); background: rgba(239,68,68,.08); }
+
+        /* ── TICKET TOTALS ── */
+        .ticket-summary {
+            background: white;
+            border-top: 2px dashed #e2e8f0;
+            padding: 12px 16px 8px;
+            flex-shrink: 0;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #475569;
+            margin-bottom: 4px;
+        }
+        .summary-row.total {
+            font-size: 22px;
+            font-weight: 900;
+            color: #0f172a;
+            margin-top: 8px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 8px;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -.5px;
+        }
+        .summary-row.total span:last-child { color: #15803d; }
+
+        /* ── PAYMENT SECTION ── */
+        .payment-section {
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            padding: 14px 16px;
+            flex-shrink: 0;
+        }
+        .payment-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+        .payment-input-wrap { position: relative; margin-bottom: 10px; }
+        .payment-prefix {
+            position: absolute;
+            left: 12px; top: 50%;
+            transform: translateY(-50%);
+            font-weight: 700;
+            color: #64748b;
+            font-size: 14px;
+        }
+        .payment-input {
+            width: 100%;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 12px 10px 36px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #0f172a;
+            outline: none;
+            font-variant-numeric: tabular-nums;
+            transition: border-color .2s;
+        }
+        .payment-input:focus { border-color: var(--pos-blue); }
+        .change-row {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 8px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .change-label { font-size: 12px; font-weight: 600; color: #15803d; }
+        .change-amount { font-size: 20px; font-weight: 900; color: #15803d; font-variant-numeric: tabular-nums; }
+        .change-row.insufficient { background: #fef2f2; border-color: #fecaca; }
+        .change-row.insufficient .change-label,
+        .change-row.insufficient .change-amount { color: var(--pos-red); }
+
+        /* Confirm button */
+        .btn-confirm {
+            width: 100%;
+            background: linear-gradient(135deg, #15803d, #16a34a);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 15px;
+            font-weight: 800;
+            padding: 14px;
+            cursor: pointer;
+            transition: opacity .15s, transform .1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-confirm:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+        .btn-confirm:not(:disabled):hover { opacity: .92; }
+        .btn-confirm:not(:disabled):active { transform: scale(.98); }
+
+        .btn-clear {
+            width: 100%;
+            background: transparent;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 8px;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: all .15s;
+        }
+        .btn-clear:hover { border-color: var(--pos-red); color: var(--pos-red); background: rgba(239,68,68,.04); }
+
+        /* Quick amounts */
+        .quick-amounts {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        .qa-btn {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #475569;
+            padding: 6px 4px;
+            cursor: pointer;
+            text-align: center;
+            transition: all .15s;
+        }
+        .qa-btn:hover { background: #e2e8f0; color: #1e293b; }
+
+        /* Error alert */
+        .pos-alert {
+            margin: 12px 16px 0;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pos-alert-error { background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.3); color: #ef4444; }
+
+        /* Cat color palette */
+        .cat-0  { background: #f97316; }
+        .cat-1  { background: #3b82f6; }
+        .cat-2  { background: #22c55e; }
+        .cat-3  { background: #a855f7; }
+        .cat-4  { background: #ec4899; }
+        .cat-5  { background: #14b8a6; }
+        .cat-6  { background: #eab308; }
+        .cat-7  { background: #ef4444; }
+        .cat-8  { background: #06b6d4; }
+        .cat-9  { background: #84cc16; }
+        .cat-none { background: #475569; }
+
+        @media (max-width: 900px) {
+            .pos-main { grid-template-columns: 1fr; }
+            .panel-cart { min-height: 400px; }
+        }
     </style>
 </head>
 <body>
 
-<div th:replace="~{fragments/nav :: navbar}"></div>
-
-<div class="container-fluid px-4 py-3" style="max-width: 1300px; margin: 0 auto;">
-
-    <!-- POS Header -->
-    <div class="pos-header text-white rounded-3 p-3 mb-4">
-        <div class="row align-items-center g-2">
-            <div class="col-auto">
-                <i class="bi bi-shop-window fs-5 me-2"></i>
-                <span class="fw-bold fs-5">Punto de Venta — Fonchys Minimarket</span>
-            </div>
-            <div class="col text-center d-none d-md-block">
-                <div id="reloj" class="fw-bold fs-6"></div>
-                <small class="text-white-50" id="fecha"></small>
-            </div>
-            <div class="col-auto text-end">
-                <span class="badge bg-white bg-opacity-25 px-3 py-2">
-                    <i class="bi bi-person-badge me-1"></i>
-                    <span sec:authentication="name">Cajero</span>
-                </span>
-            </div>
-        </div>
+<!-- ══ NAVBAR ══════════════════════════════════════════════════════ -->
+<nav class="pos-navbar">
+    <span class="pos-brand"><i class="bi bi-shop me-1"></i>Fonchys</span>
+    <div class="pos-nav-links">
+        <a th:href="@{/dashboard}" class="pos-nav-link"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+        <a th:href="@{/productos}" class="pos-nav-link"><i class="bi bi-box-seam me-1"></i>Productos</a>
+        <a th:href="@{/ventas/nueva}" class="pos-nav-link active"><i class="bi bi-cart-plus me-1"></i>POS</a>
+        <a th:href="@{/ventas}" class="pos-nav-link"><i class="bi bi-receipt me-1"></i>Ventas</a>
+        <a th:href="@{/reportes}" class="pos-nav-link" sec:authorize="hasRole('ADMIN')"><i class="bi bi-bar-chart-line me-1"></i>Reportes</a>
     </div>
-
-    <!-- Error alert -->
-    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
-        <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${error}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="pos-nav-user">
+        <i class="bi bi-person-circle"></i>
+        <span sec:authentication="name">Cajero</span>
+        <span style="color:#2a2d3e;">|</span>
+        <form th:action="@{/logout}" method="post" style="margin:0;">
+            <button type="submit" style="background:none;border:none;color:#64748b;font-size:12px;cursor:pointer;padding:0;">
+                <i class="bi bi-box-arrow-right"></i> Salir
+            </button>
+        </form>
     </div>
+</nav>
 
-    <div class="row g-4">
-
-        <!-- ====== IZQUIERDA: Selector de producto ====== -->
-        <div class="col-lg-5">
-            <div class="card card-panel border-0 shadow-sm h-100">
-                <div class="card-header bg-primary text-white py-3">
-                    <h5 class="mb-0 fw-semibold">
-                        <i class="bi bi-grid-3x3-gap me-2"></i>Seleccionar Producto
-                    </h5>
-                </div>
-                <div class="card-body p-4 d-flex flex-column gap-3">
-
-                    <div>
-                        <label class="form-label text-muted small text-uppercase fw-semibold mb-1">Producto</label>
-                        <select id="selectProducto" class="form-select form-select-lg"
-                                onchange="mostrarInfoProducto()">
-                            <option value="">— Seleccione un producto —</option>
-                            <option th:each="p : ${productos}"
-                                    th:value="${p.id}"
-                                    th:text="${p.nombre}"
-                                    th:attr="data-precio=${p.precio},data-stock=${p.stock},data-nombre=${p.nombre}">
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- Info del producto seleccionado -->
-                    <div id="productoInfo" class="rounded-3 p-3 product-info-bar d-none">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="fw-bold" id="infoNombre">—</div>
-                                <small class="text-muted">
-                                    Stock: <span id="infoStock" class="fw-semibold text-dark">0</span> unidades
-                                </small>
-                            </div>
-                            <div class="text-end">
-                                <div class="text-muted small">Precio unitario</div>
-                                <div class="fs-5 fw-bold text-primary" id="infoPrecio">S/. 0.00</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="form-label text-muted small text-uppercase fw-semibold mb-1">Cantidad</label>
-                        <div class="input-group input-group-lg">
-                            <button class="btn btn-outline-secondary" type="button" onclick="cambiarCantidad(-1)">
-                                <i class="bi bi-dash-lg"></i>
-                            </button>
-                            <input type="number" id="cantidad" class="form-control text-center fw-bold"
-                                   min="1" value="1" oninput="actualizarSubtotal()">
-                            <button class="btn btn-outline-secondary" type="button" onclick="cambiarCantidad(1)">
-                                <i class="bi bi-plus-lg"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="bg-light rounded-3 p-3 d-flex justify-content-between align-items-center">
-                        <span class="text-muted fw-semibold">Subtotal estimado</span>
-                        <span id="subtotalPreview" class="fw-bold text-success fs-4">S/. 0.00</span>
-                    </div>
-
-                    <button class="btn btn-primary btn-lg mt-auto" onclick="agregarAlCarrito()" type="button">
-                        <i class="bi bi-plus-circle me-2"></i>Agregar al Carrito
-                    </button>
-
-                </div>
-            </div>
-        </div>
-
-        <!-- ====== DERECHA: Carrito ====== -->
-        <div class="col-lg-7 d-flex flex-column gap-3">
-            <div class="card card-panel border-0 shadow-sm flex-grow-1">
-                <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-semibold">
-                        <i class="bi bi-cart3 me-2"></i>Carrito de Compras
-                    </h5>
-                    <span id="contadorItems" class="badge bg-warning text-dark px-3 py-2 rounded-pill">0 items</span>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-3" style="width:40px">#</th>
-                                    <th>Producto</th>
-                                    <th class="text-center" style="width:130px">Cantidad</th>
-                                    <th class="text-end" style="width:100px">P. Unit.</th>
-                                    <th class="text-end" style="width:110px">Subtotal</th>
-                                    <th style="width:44px"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="carritoBody">
-                                <tr id="filaVacia">
-                                    <td colspan="6" class="text-center py-5">
-                                        <i class="bi bi-cart-x empty-cart-icon d-block mx-auto mb-3"></i>
-                                        <div class="text-muted fw-semibold">El carrito está vacío</div>
-                                        <small class="text-muted">Selecciona un producto para comenzar</small>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="card-footer card-footer-total text-white p-4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="small text-white-50 text-uppercase fw-semibold">Total a pagar</div>
-                            <div class="small text-white-50" id="resumenItems">0 unidades</div>
-                        </div>
-                        <div id="totalCarrito">S/. 0.00</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Botones de acción -->
-            <div class="row g-2">
-                <div class="col-4">
-                    <button class="btn btn-outline-danger w-100 py-3" onclick="limpiarCarrito()" type="button">
-                        <i class="bi bi-trash3 me-1"></i>Limpiar
-                    </button>
-                </div>
-                <div class="col-8">
-                    <form id="formVenta" th:action="@{/ventas/registrar}" method="post">
-                        <div id="itemsContainer"></div>
-                        <button type="submit" id="btnConfirmar"
-                                class="btn btn-success btn-lg w-100 py-3" disabled>
-                            <i class="bi bi-check-circle me-2"></i>Confirmar Venta
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
+<!-- ══ POS HEADER ══════════════════════════════════════════════════ -->
+<div class="pos-header">
+    <div class="pos-header-title">
+        <i class="bi bi-shop-window" style="color:var(--pos-accent);font-size:18px;"></i>
+        Terminal de Caja — Fonchys Minimarket
+    </div>
+    <div class="pos-header-clock">
+        <div class="pos-clock-time" id="reloj">00:00:00</div>
+        <div class="pos-clock-date" id="fecha"></div>
+    </div>
+    <div class="pos-cashier-badge">
+        <i class="bi bi-person-badge"></i>
+        <span sec:authentication="name">Cajero</span>
     </div>
 </div>
 
+<!-- ══ ERROR ALERT ═════════════════════════════════════════════════ -->
+<div th:if="${error}" class="pos-alert pos-alert-error" style="position:fixed;top:120px;left:50%;transform:translateX(-50%);z-index:999;min-width:320px;max-width:500px;">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <span th:text="${error}"></span>
+</div>
+
+<!-- ══ MAIN POS ════════════════════════════════════════════════════ -->
+<div class="pos-main">
+
+    <!-- ════ LEFT: PRODUCTOS ════ -->
+    <div class="panel-products">
+
+        <!-- Search -->
+        <div class="search-zone">
+            <div class="search-input-wrap">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" id="searchInput" class="search-input"
+                       placeholder="Buscar producto o código de barras... (Enter para agregar)"
+                       autocomplete="off" autofocus>
+                <i class="bi bi-x-lg search-clear" id="searchClear"></i>
+            </div>
+            <div class="search-hint">
+                <i class="bi bi-keyboard me-1"></i>
+                Escribe para filtrar · <kbd style="background:#1e293b;color:#94a3b8;border:1px solid #2a2d3e;border-radius:3px;padding:1px 5px;font-size:10px;">Enter</kbd> agrega al carrito
+            </div>
+        </div>
+
+        <!-- Category filter -->
+        <div class="cat-bar" id="catBar">
+            <button class="cat-btn active" data-cat="all">Todos</button>
+            <button th:each="cat, st : ${categorias}"
+                    class="cat-btn"
+                    th:data-cat="${cat.id}"
+                    th:text="${cat.nombre}">
+            </button>
+        </div>
+
+        <!-- Product grid -->
+        <div class="product-grid-wrap">
+            <div class="product-grid" id="productGrid">
+
+                <div th:each="p, st : ${productos}"
+                     class="product-card"
+                     th:classappend="${p.stock <= 0} ? ' out-of-stock' : ''"
+                     th:data-id="${p.id}"
+                     th:data-nombre="${p.nombre}"
+                     th:data-precio="${p.precio}"
+                     th:data-stock="${p.stock}"
+                     th:data-cat="${p.categoria != null ? p.categoria.id : 'none'}"
+                     th:data-cat-nombre="${p.categoria != null ? p.categoria.nombre : ''}"
+                     th:data-presentacion="${p.presentacion}"
+                     th:data-barras="${p.codigoBarras != null ? p.codigoBarras : ''}"
+                     onclick="cardClick(this)">
+
+                    <!-- Stock badge top-right -->
+                    <span class="pc-stock-badge"
+                          th:classappend="${p.stock <= 0} ? ' stock-out' : (${p.stock <= (p.stockMinimo != null ? p.stockMinimo : 5)} ? ' stock-low' : ' stock-ok')"
+                          th:text="${p.stock <= 0} ? 'Agotado' : ${p.stock}">
+                    </span>
+
+                    <!-- Category color dot -->
+                    <div class="pc-cat-dot"
+                         th:classappend="${p.categoria != null} ? 'cat-' + ${p.categoria.id % 10} : 'cat-none'">
+                    </div>
+
+                    <div class="pc-name" th:text="${p.nombre}">Producto</div>
+                    <div class="pc-sub" th:text="${p.presentacion}">Unid.</div>
+                    <div class="pc-price" th:text="'S/. ' + ${#numbers.formatDecimal(p.precio, 1, 2)}">S/. 0.00</div>
+                    <div class="pc-add-hint" th:if="${p.stock > 0}">
+                        <i class="bi bi-plus-circle me-1"></i>Clic para agregar
+                    </div>
+                </div>
+
+                <div class="no-results" id="noResults" style="display:none;">
+                    <i class="bi bi-search"></i>
+                    <strong style="display:block;margin-bottom:4px;">Sin resultados</strong>
+                    <span style="font-size:13px;">Intenta con otro término</span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ════ RIGHT: CARRITO + PAGO ════ -->
+    <div class="panel-cart">
+
+        <!-- Cart header -->
+        <div class="cart-header">
+            <span class="cart-title"><i class="bi bi-receipt me-2"></i>Ticket de Venta</span>
+            <span class="cart-count" id="cartCount">0 items</span>
+        </div>
+
+        <!-- Ticket items / empty state -->
+        <div class="ticket-area" id="ticketArea">
+            <div class="ticket-empty" id="emptyState">
+                <i class="bi bi-cart-x"></i>
+                <p>El carrito está vacío<br>
+                <span style="font-size:12px;color:#cbd5e1;">Selecciona un producto para comenzar</span></p>
+            </div>
+            <div class="ticket-items" id="ticketItems"></div>
+        </div>
+
+        <!-- Totals -->
+        <div class="ticket-summary" id="ticketSummary" style="display:none;">
+            <div class="summary-row">
+                <span id="summaryItems">0 unidades</span>
+                <span></span>
+            </div>
+            <div class="summary-row total">
+                <span>TOTAL</span>
+                <span id="totalDisplay">S/. 0.00</span>
+            </div>
+        </div>
+
+        <!-- Payment section -->
+        <div class="payment-section">
+            <div class="payment-label"><i class="bi bi-cash-coin me-1"></i>Efectivo recibido</div>
+
+            <div class="quick-amounts" id="quickAmounts">
+                <div class="qa-btn" onclick="setPayment(5)">S/. 5</div>
+                <div class="qa-btn" onclick="setPayment(10)">S/. 10</div>
+                <div class="qa-btn" onclick="setPayment(20)">S/. 20</div>
+                <div class="qa-btn" id="qaExact" onclick="setExact()">Exacto</div>
+            </div>
+
+            <div class="payment-input-wrap">
+                <span class="payment-prefix">S/.</span>
+                <input type="number" id="paymentInput" class="payment-input"
+                       min="0" step="0.10" placeholder="0.00"
+                       oninput="calcChange()">
+            </div>
+
+            <div class="change-row" id="changeRow">
+                <span class="change-label"><i class="bi bi-arrow-return-left me-1"></i>Vuelto</span>
+                <span class="change-amount" id="changeDisplay">S/. 0.00</span>
+            </div>
+
+            <!-- Hidden form -->
+            <form id="formVenta" th:action="@{/ventas/registrar}" method="post">
+                <div id="itemsContainer"></div>
+                <button type="submit" id="btnConfirmar" class="btn-confirm" disabled>
+                    <i class="bi bi-check-circle-fill"></i>
+                    Confirmar Venta
+                </button>
+            </form>
+
+            <button class="btn-clear" onclick="clearCart()">
+                <i class="bi bi-trash3 me-1"></i>Limpiar carrito
+            </button>
+        </div>
+
+    </div><!-- end panel-cart -->
+</div><!-- end pos-main -->
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Construir mapa de productos desde los data-attributes del select
-    const productosData = {};
-    document.querySelectorAll('#selectProducto option[value]').forEach(opt => {
-        if (opt.value) {
-            productosData[opt.value] = {
-                id: opt.value,
-                nombre: opt.getAttribute('data-nombre') || opt.text,
-                precio: parseFloat(opt.getAttribute('data-precio')) || 0,
-                stock: parseInt(opt.getAttribute('data-stock')) || 0
-            };
+// ═══════════════════════════════════════════════════════════
+//  RELOJ
+// ═══════════════════════════════════════════════════════════
+function tick() {
+    const now = new Date();
+    document.getElementById('reloj').textContent = now.toLocaleTimeString('es-PE');
+    document.getElementById('fecha').textContent = now.toLocaleDateString('es-PE',{
+        weekday:'long', day:'numeric', month:'long', year:'numeric'
+    });
+}
+setInterval(tick, 1000); tick();
+
+// ═══════════════════════════════════════════════════════════
+//  CARRITO STATE
+// ═══════════════════════════════════════════════════════════
+let carrito = []; // { productoId, nombre, precio, cantidad, stock, presentacion }
+
+// ═══════════════════════════════════════════════════════════
+//  SEARCH & FILTER
+// ═══════════════════════════════════════════════════════════
+const searchInput = document.getElementById('searchInput');
+const searchClear = document.getElementById('searchClear');
+const catBtns     = document.querySelectorAll('.cat-btn');
+const cards       = document.querySelectorAll('.product-card');
+const noResults   = document.getElementById('noResults');
+
+let activeCat = 'all';
+
+searchInput.addEventListener('input', () => {
+    searchClear.style.display = searchInput.value ? 'block' : 'none';
+    applyFilters();
+});
+searchClear.addEventListener('click', () => {
+    searchInput.value = '';
+    searchClear.style.display = 'none';
+    searchInput.focus();
+    applyFilters();
+});
+
+// Enter key → add first visible in-stock card
+searchInput.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const first = [...cards].find(c => c.style.display !== 'none' && !c.classList.contains('out-of-stock'));
+    if (first) { cardClick(first); searchInput.value = ''; searchClear.style.display = 'none'; applyFilters(); }
+});
+
+catBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        catBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeCat = btn.dataset.cat;
+        applyFilters();
+    });
+});
+
+function applyFilters() {
+    const term = searchInput.value.toLowerCase().trim();
+    let visible = 0;
+    cards.forEach(card => {
+        const matchCat  = activeCat === 'all' || card.dataset.cat == activeCat;
+        const matchTerm = !term
+            || card.dataset.nombre.toLowerCase().includes(term)
+            || card.dataset.barras.includes(term)
+            || card.dataset.catNombre.toLowerCase().includes(term);
+        const show = matchCat && matchTerm;
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    noResults.style.display = visible === 0 ? 'grid' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CARD CLICK → ADD TO CART
+// ═══════════════════════════════════════════════════════════
+function cardClick(card) {
+    if (card.classList.contains('out-of-stock')) return;
+    const id    = card.dataset.id;
+    const stock = parseInt(card.dataset.stock);
+    const existing = carrito.find(i => i.productoId === id);
+
+    if (existing) {
+        if (existing.cantidad >= stock) {
+            flashCard(card, false);
+            return;
         }
+        existing.cantidad++;
+    } else {
+        carrito.push({
+            productoId:   id,
+            nombre:       card.dataset.nombre,
+            precio:       parseFloat(card.dataset.precio),
+            cantidad:     1,
+            stock:        stock,
+            presentacion: card.dataset.presentacion
+        });
+    }
+    flashCard(card, true);
+    renderCart();
+}
+
+function flashCard(card, success) {
+    card.style.border = `2px solid ${success ? 'var(--pos-green)' : 'var(--pos-red)'}`;
+    setTimeout(() => { card.style.border = ''; }, 400);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER CART
+// ═══════════════════════════════════════════════════════════
+function renderCart() {
+    const ticketItems  = document.getElementById('ticketItems');
+    const emptyState   = document.getElementById('emptyState');
+    const ticketSummary = document.getElementById('ticketSummary');
+    const cartCount    = document.getElementById('cartCount');
+    const itemsContainer = document.getElementById('itemsContainer');
+    const btnConfirmar = document.getElementById('btnConfirmar');
+
+    ticketItems.innerHTML = '';
+    itemsContainer.innerHTML = '';
+
+    if (!carrito.length) {
+        emptyState.style.display = 'flex';
+        ticketSummary.style.display = 'none';
+        document.getElementById('totalDisplay').textContent = 'S/. 0.00';
+        cartCount.textContent = '0 items';
+        document.getElementById('changeDisplay').textContent = 'S/. 0.00';
+        document.getElementById('changeRow').className = 'change-row';
+        btnConfirmar.disabled = true;
+        return;
+    }
+
+    emptyState.style.display = 'none';
+    ticketSummary.style.display = 'block';
+
+    let total = 0, totalUnits = 0;
+
+    carrito.forEach((item, i) => {
+        const subtotal = item.precio * item.cantidad;
+        total += subtotal;
+        totalUnits += item.cantidad;
+
+        const div = document.createElement('div');
+        div.className = 'ticket-item';
+        div.innerHTML = `
+            <div>
+                <div class="ti-name">${escHtml(item.nombre)}</div>
+                <div class="ti-sub">${escHtml(item.presentacion)} &bull; S/. ${item.precio.toFixed(2)} c/u</div>
+                <div class="ti-controls">
+                    <button class="qty-btn" onclick="changeQty(${i},-1)">−</button>
+                    <span class="qty-num">${item.cantidad}</span>
+                    <button class="qty-btn" onclick="changeQty(${i},+1)">+</button>
+                    <span style="color:#94a3b8;font-size:11px;">máx ${item.stock}</span>
+                </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+                <button class="ti-remove" onclick="removeItem(${i})" title="Quitar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <div class="ti-subtotal">S/. ${subtotal.toFixed(2)}</div>
+            </div>`;
+        ticketItems.appendChild(div);
+
+        itemsContainer.innerHTML +=
+            `<input type="hidden" name="items[${i}].productoId" value="${item.productoId}">` +
+            `<input type="hidden" name="items[${i}].cantidad"   value="${item.cantidad}">`;
     });
 
-    let carrito = [];
+    const totalFmt = 'S/. ' + total.toFixed(2);
+    document.getElementById('totalDisplay').textContent = totalFmt;
+    document.getElementById('summaryItems').textContent =
+        totalUnits + ' unidad' + (totalUnits !== 1 ? 'es' : '') +
+        ' · ' + carrito.length + ' product' + (carrito.length !== 1 ? 'os' : 'o');
+    cartCount.textContent = carrito.length + ' item' + (carrito.length !== 1 ? 's' : '');
+    btnConfirmar.disabled = false;
 
-    // Reloj en tiempo real
-    function actualizarReloj() {
-        const ahora = new Date();
-        const reloj = document.getElementById('reloj');
-        const fecha = document.getElementById('fecha');
-        if (reloj) reloj.textContent = ahora.toLocaleTimeString('es-PE');
-        if (fecha) fecha.textContent = ahora.toLocaleDateString('es-PE', {
-            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-        });
+    calcChange();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CART CONTROLS
+// ═══════════════════════════════════════════════════════════
+function changeQty(idx, delta) {
+    const item = carrito[idx];
+    const nueva = item.cantidad + delta;
+    if (nueva < 1) { removeItem(idx); return; }
+    if (nueva > item.stock) return;
+    item.cantidad = nueva;
+    renderCart();
+}
+
+function removeItem(idx) {
+    carrito.splice(idx, 1);
+    renderCart();
+}
+
+function clearCart() {
+    if (!carrito.length) return;
+    if (!confirm('¿Limpiar todo el carrito?')) return;
+    carrito = [];
+    document.getElementById('paymentInput').value = '';
+    renderCart();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PAYMENT CALCULATOR
+// ═══════════════════════════════════════════════════════════
+function getTotal() {
+    return carrito.reduce((s, i) => s + i.precio * i.cantidad, 0);
+}
+
+function calcChange() {
+    const paid   = parseFloat(document.getElementById('paymentInput').value) || 0;
+    const total  = getTotal();
+    const change = paid - total;
+    const row    = document.getElementById('changeRow');
+    const disp   = document.getElementById('changeDisplay');
+
+    if (paid === 0 || !carrito.length) {
+        disp.textContent = 'S/. 0.00';
+        row.className = 'change-row';
+        return;
     }
-    setInterval(actualizarReloj, 1000);
-    actualizarReloj();
-
-    function mostrarInfoProducto() {
-        const sel = document.getElementById('selectProducto');
-        const info = document.getElementById('productoInfo');
-        if (!sel.value) {
-            info.classList.add('d-none');
-            document.getElementById('subtotalPreview').textContent = 'S/. 0.00';
-            return;
-        }
-        const p = productosData[sel.value];
-        document.getElementById('infoNombre').textContent = p.nombre;
-        document.getElementById('infoStock').textContent = p.stock;
-        document.getElementById('infoPrecio').textContent = 'S/. ' + p.precio.toFixed(2);
-        info.classList.remove('d-none');
-        actualizarSubtotal();
+    if (change < 0) {
+        disp.textContent = '−S/. ' + Math.abs(change).toFixed(2);
+        row.className = 'change-row insufficient';
+    } else {
+        disp.textContent = 'S/. ' + change.toFixed(2);
+        row.className = 'change-row';
     }
+}
 
-    function actualizarSubtotal() {
-        const sel = document.getElementById('selectProducto');
-        const cantidad = parseInt(document.getElementById('cantidad').value) || 0;
-        if (!sel.value || !productosData[sel.value]) {
-            document.getElementById('subtotalPreview').textContent = 'S/. 0.00';
-            return;
-        }
-        const precio = productosData[sel.value].precio;
-        document.getElementById('subtotalPreview').textContent = 'S/. ' + (precio * cantidad).toFixed(2);
+function setPayment(amount) {
+    document.getElementById('paymentInput').value = amount.toFixed(2);
+    calcChange();
+}
+
+function setExact() {
+    const total = getTotal();
+    if (total > 0) {
+        document.getElementById('paymentInput').value = total.toFixed(2);
+        calcChange();
     }
+}
 
-    function cambiarCantidad(delta) {
-        const input = document.getElementById('cantidad');
-        input.value = Math.max(1, (parseInt(input.value) || 1) + delta);
-        actualizarSubtotal();
-    }
+// ═══════════════════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════════════════
+function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-    function agregarAlCarrito() {
-        const sel = document.getElementById('selectProducto');
-        const id = sel.value;
-        const cantidad = parseInt(document.getElementById('cantidad').value) || 1;
-        if (!id) { alert('Selecciona un producto primero.'); return; }
-
-        const p = productosData[id];
-        const existente = carrito.find(i => i.productoId === id);
-
-        if (existente) {
-            const nueva = existente.cantidad + cantidad;
-            if (nueva > p.stock) { alert('Stock insuficiente. Disponible: ' + p.stock); return; }
-            existente.cantidad = nueva;
-        } else {
-            if (cantidad > p.stock) { alert('Stock insuficiente. Disponible: ' + p.stock); return; }
-            carrito.push({ productoId: id, nombre: p.nombre, precio: p.precio, cantidad: cantidad, stock: p.stock });
-        }
-
-        sel.value = '';
-        document.getElementById('cantidad').value = 1;
-        document.getElementById('productoInfo').classList.add('d-none');
-        document.getElementById('subtotalPreview').textContent = 'S/. 0.00';
-        renderizarCarrito();
-    }
-
-    function cambiarCantidadCarrito(idx, delta) {
-        const item = carrito[idx];
-        const nueva = item.cantidad + delta;
-        if (nueva < 1) return;
-        if (nueva > item.stock) { alert('Stock insuficiente. Disponible: ' + item.stock); return; }
-        item.cantidad = nueva;
-        renderizarCarrito();
-    }
-
-    function eliminarItem(idx) {
-        carrito.splice(idx, 1);
-        renderizarCarrito();
-    }
-
-    function limpiarCarrito() {
-        if (!carrito.length) return;
-        if (confirm('¿Limpiar todos los productos del carrito?')) {
-            carrito = [];
-            renderizarCarrito();
-        }
-    }
-
-    function renderizarCarrito() {
-        const tbody = document.getElementById('carritoBody');
-        const itemsContainer = document.getElementById('itemsContainer');
-        const btnConfirmar = document.getElementById('btnConfirmar');
-        const contadorItems = document.getElementById('contadorItems');
-        const resumenItems = document.getElementById('resumenItems');
-
-        tbody.innerHTML = '';
-        itemsContainer.innerHTML = '';
-
-        if (!carrito.length) {
-            tbody.innerHTML = `
-                <tr><td colspan="6" class="text-center py-5">
-                    <i class="bi bi-cart-x empty-cart-icon d-block mx-auto mb-3"></i>
-                    <div class="text-muted fw-semibold">El carrito está vacío</div>
-                    <small class="text-muted">Selecciona un producto para comenzar</small>
-                </td></tr>`;
-            document.getElementById('totalCarrito').textContent = 'S/. 0.00';
-            contadorItems.textContent = '0 items';
-            resumenItems.textContent = '0 unidades';
-            btnConfirmar.disabled = true;
-            return;
-        }
-
-        let total = 0;
-        let totalUnidades = 0;
-
-        carrito.forEach((item, i) => {
-            const subtotal = item.precio * item.cantidad;
-            total += subtotal;
-            totalUnidades += item.cantidad;
-
-            const tr = document.createElement('tr');
-            tr.className = 'cart-item';
-            tr.innerHTML = `
-                <td class="ps-3 text-muted small">${i + 1}</td>
-                <td>
-                    <div class="fw-semibold">${escHtml(item.nombre)}</div>
-                    <small class="text-muted">S/. ${item.precio.toFixed(2)} c/u</small>
-                </td>
-                <td class="text-center">
-                    <div class="d-flex align-items-center justify-content-center gap-1">
-                        <button class="btn btn-outline-secondary btn-qty" onclick="cambiarCantidadCarrito(${i},-1)" type="button">-</button>
-                        <span class="qty-display">${item.cantidad}</span>
-                        <button class="btn btn-outline-secondary btn-qty" onclick="cambiarCantidadCarrito(${i},1)" type="button">+</button>
-                    </div>
-                </td>
-                <td class="text-end">S/. ${item.precio.toFixed(2)}</td>
-                <td class="text-end fw-bold text-success">S/. ${subtotal.toFixed(2)}</td>
-                <td class="text-center">
-                    <button class="btn btn-sm btn-outline-danger" onclick="eliminarItem(${i})" type="button">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                </td>`;
-            tbody.appendChild(tr);
-
-            // Inputs ocultos para el form POST
-            itemsContainer.innerHTML +=
-                `<input type="hidden" name="items[${i}].productoId" value="${item.productoId}">` +
-                `<input type="hidden" name="items[${i}].cantidad" value="${item.cantidad}">`;
-        });
-
-        document.getElementById('totalCarrito').textContent = 'S/. ' + total.toFixed(2);
-        contadorItems.textContent = carrito.length + ' item' + (carrito.length !== 1 ? 's' : '');
-        resumenItems.textContent = totalUnidades + ' unidad' + (totalUnidades !== 1 ? 'es' : '');
-        btnConfirmar.disabled = false;
-    }
-
-    function escHtml(str) {
-        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
+// Auto-dismiss error banner
+const errBanner = document.querySelector('.pos-alert');
+if (errBanner) setTimeout(() => errBanner.style.display = 'none', 5000);
 </script>
 </body>
 </html>

@@ -37,7 +37,7 @@ public class Usuario {
     @Column(nullable = false)
     private Boolean activo = true;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "empleado_id", unique = true)
     private Empleado empleado;
 

@@ -2,6 +2,7 @@ package com.fonchys.minimarket.controller;
 
 import com.fonchys.minimarket.dto.VentaRequestDTO;
 import com.fonchys.minimarket.model.Venta;
+import com.fonchys.minimarket.repository.CategoriaRepository;
 import com.fonchys.minimarket.service.IProductoService;
 import com.fonchys.minimarket.service.IVentaService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class VentaController {
 
     private final IVentaService ventaService;
     private final IProductoService productoService;
+    private final CategoriaRepository categoriaRepository;
 
     @GetMapping
     public String lista(Model model) {
@@ -32,6 +34,7 @@ public class VentaController {
     @GetMapping("/nueva")
     public String formNueva(Model model) {
         model.addAttribute("productos", productoService.listarActivos());
+        model.addAttribute("categorias", categoriaRepository.findAll());
         return "ventas/nueva";
     }
 

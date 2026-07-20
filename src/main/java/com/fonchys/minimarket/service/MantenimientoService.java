@@ -47,7 +47,7 @@ public class MantenimientoService {
     /**
      * Registra un heartbeat de salud del sistema cada hora.
      */
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 */2 * * * *")
     @Transactional(readOnly = true)
     public void heartbeatSistema() {
         long totalProductos = productoRepository.count();

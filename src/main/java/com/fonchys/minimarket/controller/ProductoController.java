@@ -73,6 +73,11 @@ public class ProductoController {
             model.addAttribute("unidades", UnidadMedida.values());
             return "productos/form";
         }
+        // String vacío → null para campos con unique constraint
+        if (producto.getCodigoBarras() != null && producto.getCodigoBarras().isBlank()) {
+            producto.setCodigoBarras(null);
+        }
+
         if (categoriaId != null) {
             Categoria cat = categoriaRepository.findById(categoriaId).orElse(null);
             producto.setCategoria(cat);
