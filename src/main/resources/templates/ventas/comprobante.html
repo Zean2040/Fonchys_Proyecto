@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Comprobante de Venta — Fonchys Minimarket</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f1f5f9; }
+
+        .page-wrap {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 30px 16px 60px;
+        }
+
+        /* ── TICKET ── */
+        .ticket {
+            width: 100%;
+            max-width: 420px;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 4px 24px rgba(0,0,0,.12);
+            position: relative;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* Serrated top edge */
+        .ticket::before {
+            content: '';
+            display: block;
+            height: 16px;
+            background:
+                radial-gradient(circle at 8px 16px, #f1f5f9 8px, white 8px);
+            background-size: 16px 16px;
+            background-position: -8px 0;
+        }
+        /* Serrated bottom edge */
+        .ticket::after {
+            content: '';
+            display: block;
+            height: 16px;
+            background:
+                radial-gradient(circle at 8px 0, #f1f5f9 8px, white 8px);
+            background-size: 16px 16px;
+        }
+
+        .ticket-body { padding: 10px 28px 20px; }
+
+        /* Header */
+        .t-store { text-align: center; margin-bottom: 16px; }
+        .t-store-name {
+            font-size: 22px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #0f172a;
+        }
+        .t-store-sub {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .t-divider {
+            border: none;
+            border-top: 1px dashed #cbd5e1;
+            margin: 12px 0;
+        }
+
+        /* Meta info */
+        .t-meta { font-size: 12px; color: #475569; }
+        .t-meta-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
+        .t-meta-row strong { color: #1e293b; }
+
+        /* Items */
+        .t-items-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+        .t-item {
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        .t-item-name {
+            color: #1e293b;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 230px;
+        }
+        .t-item-detail {
+            display: flex;
+            justify-content: space-between;
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 1px;
+        }
+        .t-item-subtotal {
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        /* Total section */
+        .t-total-box {
+            background: #0f172a;
+            border-radius: 6px;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4px;
+        }
+        .t-total-label { color: #94a3b8; font-size: 13px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+        .t-total-amount { color: #22c55e; font-size: 26px; font-weight: 900; font-variant-numeric: tabular-nums; }
+
+        /* Estado badge */
+        .t-estado {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+        }
+        .estado-completada { background: #dcfce7; color: #15803d; }
+        .estado-anulada    { background: #fee2e2; color: #b91c1c; }
+
+        /* Footer */
+        .t-footer {
+            text-align: center;
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 16px;
+            line-height: 1.6;
+        }
+        .t-footer strong { color: #475569; }
+
+        /* ── ACTIONS ── */
+        .actions {
+            width: 100%;
+            max-width: 420px;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .btn-nueva-venta {
+            background: #15803d;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            padding: 14px;
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: opacity .15s;
+        }
+        .btn-nueva-venta:hover { opacity: .9; color: white; }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-print, .btn-ventas {
+            flex: 1;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: opacity .15s;
+        }
+        .btn-print {
+            background: #1e293b;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-print:hover { opacity: .85; color: white; }
+        .btn-ventas {
+            background: white;
+            color: #475569;
+            border: 1.5px solid #e2e8f0;
+        }
+        .btn-ventas:hover { background: #f8fafc; color: #1e293b; }
+
+        /* ── PRINT STYLES ── */
+        @media print {
+            body { background: white !important; }
+            .page-wrap { padding: 0; justify-content: flex-start; }
+            .ticket { box-shadow: none; max-width: 100%; }
+            .ticket::before, .ticket::after { display: none; }
+            .actions { display: none !important; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrap">
+
+    <!-- Ticket -->
+    <div class="ticket">
+        <div class="ticket-body">
+
+            <!-- Store header -->
+            <div class="t-store">
+                <div class="t-store-name">Fonchys Minimarket</div>
+                <div class="t-store-sub">RUC: 20123456789 &bull; Lima, Perú</div>
+                <div class="t-store-sub">Tel: (01) 234-5678</div>
+            </div>
+
+            <hr class="t-divider">
+
+            <!-- Comprobante meta -->
+            <div class="t-meta">
+                <div class="t-meta-row">
+                    <span>Comprobante N°</span>
+                    <strong th:text="'#' + ${venta.id}"></strong>
+                </div>
+                <div class="t-meta-row">
+                    <span>Fecha</span>
+                    <strong th:text="${#temporals.format(venta.fecha, 'dd/MM/yyyy')}"></strong>
+                </div>
+                <div class="t-meta-row">
+                    <span>Hora</span>
+                    <strong th:text="${#temporals.format(venta.fecha, 'HH:mm:ss')}"></strong>
+                </div>
+                <div class="t-meta-row">
+                    <span>Cajero</span>
+                    <strong th:text="${venta.usuario != null ? venta.usuario.nombre : '—'}"></strong>
+                </div>
+                <div class="t-meta-row">
+                    <span>Estado</span>
+                    <span class="t-estado"
+                          th:classappend="${venta.estado.name() == 'COMPLETADA'} ? 'estado-completada' : 'estado-anulada'"
+                          th:text="${venta.estado.name() == 'COMPLETADA'} ? 'Completada' : 'Anulada'">
+                    </span>
+                </div>
+            </div>
+
+            <hr class="t-divider">
+
+            <!-- Items header -->
+            <div class="t-items-header">
+                <span>Descripción</span>
+                <span>Subtotal</span>
+            </div>
+
+            <!-- Items -->
+            <div th:each="d : ${venta.detalles}" class="t-item">
+                <div class="t-item-name" th:text="${d.producto.nombre}">Producto</div>
+                <div class="t-item-detail">
+                    <span th:text="${d.cantidad} + ' x S/. ' + ${#numbers.formatDecimal(d.precioUnitario, 1, 2)}"></span>
+                    <span class="t-item-subtotal" th:text="'S/. ' + ${#numbers.formatDecimal(d.subtotal, 1, 2)}"></span>
+                </div>
+            </div>
+
+            <hr class="t-divider">
+
+            <!-- Items count -->
+            <div style="font-size:12px;color:#64748b;text-align:right;margin-bottom:10px;">
+                <span th:text="${venta.detalles.size()} + ' producto(s)'"></span>
+            </div>
+
+            <!-- Total -->
+            <div class="t-total-box">
+                <span class="t-total-label">Total</span>
+                <span class="t-total-amount" th:text="'S/. ' + ${#numbers.formatDecimal(venta.total, 1, 2)}"></span>
+            </div>
+
+            <!-- Footer message -->
+            <div class="t-footer">
+                <hr class="t-divider" style="margin-top:16px;">
+                <strong>¡Gracias por su compra!</strong><br>
+                Conserve este comprobante<br>
+                Fonchys Minimarket — Su tienda de confianza
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="actions no-print">
+        <a th:href="@{/ventas/nueva}" class="btn-nueva-venta">
+            <i class="bi bi-plus-circle-fill"></i>
+            Nueva Venta
+        </a>
+        <div class="btn-row">
+            <button onclick="window.print()" class="btn-print">
+                <i class="bi bi-printer-fill"></i>
+                Imprimir
+            </button>
+            <a th:href="@{/ventas}" class="btn-ventas">
+                <i class="bi bi-list-ul"></i>
+                Ver ventas
+            </a>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Auto-print si viene de registrar (parámetro ?print=1)
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('print') === '1') window.print();
+</script>
+</body>
+</html>

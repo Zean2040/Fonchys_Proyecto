@@ -40,9 +40,9 @@ public class ReporteController {
             model.addAttribute("fechaInicio", fechaInicio);
             model.addAttribute("fechaFin", fechaFin);
         } else {
-            ventas = ventaService.listarVentasHoy();
-            model.addAttribute("fechaInicio", LocalDate.now().toString());
-            model.addAttribute("fechaFin", LocalDate.now().toString());
+            ventas = ventaService.listarTodas();
+            model.addAttribute("fechaInicio", "");
+            model.addAttribute("fechaFin", "");
         }
 
         BigDecimal totalIngresos = ventas.stream()

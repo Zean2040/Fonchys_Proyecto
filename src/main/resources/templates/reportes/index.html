@@ -150,7 +150,10 @@
         </div>
         <div class="card-footer text-muted small d-flex justify-content-between">
             <span>Total registros: <strong th:text="${ventas.size()}">0</strong></span>
-            <span>Período: <strong th:text="${fechaInicio}"></strong> al <strong th:text="${fechaFin}"></strong></span>
+            <span th:if="${fechaInicio != null and !fechaInicio.isEmpty()}">
+                Período: <strong th:text="${fechaInicio}"></strong> al <strong th:text="${fechaFin}"></strong>
+            </span>
+            <span th:unless="${fechaInicio != null and !fechaInicio.isEmpty()}">Todas las ventas</span>
         </div>
     </div>
 </div>

@@ -48,13 +48,18 @@ public class VentaController {
                 return "redirect:/ventas/nueva";
             }
             Venta venta = ventaService.registrarVenta(dto, userDetails.getUsername());
-            flash.addFlashAttribute("exito",
-                "Venta #" + venta.getId() + " registrada. Total: S/. " + String.format("%.2f", venta.getTotal()));
+            return "redirect:/ventas/comprobante/" + venta.getId();
         } catch (RuntimeException e) {
             flash.addFlashAttribute("error", e.getMessage());
             return "redirect:/ventas/nueva";
         }
-        return "redirect:/ventas";
+    }
+
+    @GetMapping("/comprobante/{id}")
+    public String comprobante(@PathVariable Long id, Model model) {
+        Venta venta = ventaService.buscarPorId(id);
+        model.addAttribute("venta", venta);
+        return "ventas/comprobante";
     }
 
     @PostMapping("/anular/{id}")
