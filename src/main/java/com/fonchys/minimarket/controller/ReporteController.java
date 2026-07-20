@@ -81,7 +81,7 @@ public class ReporteController {
         if (fechaInicio != null && fechaFin != null && !fechaInicio.isBlank() && !fechaFin.isBlank()) {
             ventas = ventaService.listarPorRangoFecha(fechaInicio, fechaFin);
         } else {
-            ventas = ventaService.listarVentasHoy();
+            ventas = ventaService.listarTodas();
         }
 
         ByteArrayOutputStream out = ExcelExporter.exportarVentas(ventas);
