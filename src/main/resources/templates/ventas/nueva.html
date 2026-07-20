@@ -264,8 +264,19 @@
             display: flex;
             flex-direction: column;
             background: #f8fafc;
-            overflow: hidden;
+            min-height: 0;
         }
+
+        /* Scrollable body below the header */
+        .cart-body {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .cart-body::-webkit-scrollbar { width: 3px; }
+        .cart-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
 
         /* Cart header */
         .cart-header {
@@ -288,19 +299,15 @@
 
         /* Ticket area */
         .ticket-area {
-            flex: 1;
-            overflow-y: auto;
             background: #f8fafc;
         }
-        .ticket-area::-webkit-scrollbar { width: 3px; }
-        .ticket-area::-webkit-scrollbar-thumb { background: #cbd5e1; }
 
         .ticket-empty {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100%;
+            min-height: 180px;
             color: #94a3b8;
             padding: 40px;
             text-align: center;
@@ -522,9 +529,12 @@
         .cat-9  { background: #84cc16; }
         .cat-none { background: #475569; }
 
+        /* Ensure grid children can shrink below content height */
+        .panel-products, .panel-cart { min-height: 0; }
+
         @media (max-width: 900px) {
             .pos-main { grid-template-columns: 1fr; }
-            .panel-cart { min-height: 400px; }
+            .panel-cart { min-height: 500px; }
         }
     </style>
 </head>
@@ -660,6 +670,9 @@
             <span class="cart-count" id="cartCount">0 items</span>
         </div>
 
+        <!-- Scrollable body: ticket + totals + payment -->
+        <div class="cart-body">
+
         <!-- Ticket items / empty state -->
         <div class="ticket-area" id="ticketArea">
             <div class="ticket-empty" id="emptyState">
@@ -735,6 +748,7 @@
             </button>
         </div>
 
+        </div><!-- end cart-body -->
     </div><!-- end panel-cart -->
 </div><!-- end pos-main -->
 
