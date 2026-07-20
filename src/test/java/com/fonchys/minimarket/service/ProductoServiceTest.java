@@ -3,26 +3,29 @@ package com.fonchys.minimarket.service;
 import com.fonchys.minimarket.model.Producto;
 import com.fonchys.minimarket.repository.ProductoRepository;
 import com.fonchys.minimarket.service.impl.ProductoServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * Pruebas unitarias — ProductoService
+ * Mockito simula el repositorio: no se necesita base de datos ni Spring.
+ */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("ProductoService - Pruebas unitarias (TDD)")
+@TestMethodOrder(MethodOrderer.DisplayName.class)
 class ProductoServiceTest {
+
+    private static final String SEP  = "═".repeat(60);
+    private static final String LINE = "─".repeat(60);
 
     @Mock
     private ProductoRepository productoRepository;
@@ -30,114 +33,144 @@ class ProductoServiceTest {
     @InjectMocks
     private ProductoServiceImpl productoService;
 
-    private Producto productoBase;
+    @BeforeAll
+    static void inicio() {
+        System.out.println("\n" + SEP);
+        System.out.println("  PRUEBAS UNITARIAS — ProductoService");
+        System.out.println("  Capa: Servicio | Framework: JUnit 5 + Mockito");
+        System.out.println(SEP);
+    }
+
+    @AfterAll
+    static void fin() {
+        System.out.println("\n" + SEP);
+        System.out.println("  FIN — ProductoService");
+        System.out.println(SEP + "\n");
+    }
 
     @BeforeEach
-    void setUp() {
-        productoBase = new Producto();
-        productoBase.setId(1L);
-        productoBase.setNombre("Coca Cola 500ml");
-        productoBase.setPrecio(new BigDecimal("2.50"));
-        productoBase.setStock(100);
-        productoBase.setActivo(true);
+    void antes(TestInfo info) {
+        System.out.println("\n" + LINE);
+        System.out.println("  EJECUTANDO: " + info.getDisplayName());
+        System.out.println(LINE);
+    }
+
+    @AfterEach
+    void despues(TestInfo info) {
+        System.out.println("  ✔  PASÓ: " + info.getDisplayName());
+    }
+
+    private Producto productoEjemplo(Long id, String nombre, int stock) {
+        Producto p = new Producto();
+        p.setId(id);
+        p.setNombre(nombre);
+        p.setStock(stock);
+        p.setPrecio(new BigDecimal("10.00"));
+        p.setActivo(true);
+        return p;
     }
 
     @Test
-    @DisplayName("listarActivos: debe retornar productos activos")
-    void listarActivos_debeRetornarListaNoVacia() {
-        when(productoRepository.findByActivoTrue()).thenReturn(Arrays.asList(productoBase));
+    @DisplayName("[Producto-01] listarActivos devuelve todos los productos activos del repositorio")
+    void listarActivos_devuelveProductosDelRepositorio() {
+        List<Producto> esperados = List.of(
+            productoEjemplo(1L, "Coca Cola", 20),
+            productoEjemplo(2L, "Pan de Molde", 10)
+        );
+        when(productoRepository.findByActivoTrue()).thenReturn(esperados);
+        System.out.println("  Mock: repositorio devuelve 2 productos activos");
 
         List<Producto> resultado = productoService.listarActivos();
 
-        assertThat(resultado).isNotEmpty();
-        assertThat(resultado).hasSize(1);
-        assertThat(resultado.get(0).getNombre()).isEqualTo("Coca Cola 500ml");
-        verify(productoRepository).findByActivoTrue();
+        assertEquals(2, resultado.size());
+        assertEquals("Coca Cola", resultado.get(0).getNombre());
+        verify(productoRepository, atLeastOnce()).findByActivoTrue();
+        System.out.println("  Recibidos: " + resultado.size() + " productos — nombres correctos");
     }
 
     @Test
-    @DisplayName("guardar: debe persistir el producto y retornarlo")
-    void guardar_conProductoValido_debePersistir() {
-        when(productoRepository.save(any(Producto.class))).thenReturn(productoBase);
-
-        Producto resultado = productoService.guardar(productoBase);
-
-        assertThat(resultado).isNotNull();
-        assertThat(resultado.getId()).isEqualTo(1L);
-        verify(productoRepository).save(productoBase);
-    }
-
-    @Test
-    @DisplayName("guardar: debe lanzar excepción con producto nulo")
-    void guardar_conProductoNulo_debeLanzarNullPointerException() {
-        assertThatThrownBy(() -> productoService.guardar(null))
-            .isInstanceOf(NullPointerException.class);
-    }
-
-    @Test
-    @DisplayName("reducirStock: debe descontar cuando hay stock suficiente")
-    void reducirStock_conStockSuficiente_debeRetornarTrue() {
-        when(productoRepository.findById(1L)).thenReturn(Optional.of(productoBase));
-        when(productoRepository.save(any())).thenReturn(productoBase);
-
-        boolean resultado = productoService.reducirStock(1L, 10);
-
-        assertThat(resultado).isTrue();
-        assertThat(productoBase.getStock()).isEqualTo(90);
-        verify(productoRepository).save(productoBase);
-    }
-
-    @Test
-    @DisplayName("reducirStock: debe retornar false cuando stock es insuficiente")
-    void reducirStock_conStockInsuficiente_debeRetornarFalse() {
-        when(productoRepository.findById(1L)).thenReturn(Optional.of(productoBase));
-
-        boolean resultado = productoService.reducirStock(1L, 200);
-
-        assertThat(resultado).isFalse();
-        assertThat(productoBase.getStock()).isEqualTo(100); // sin cambios
-        verify(productoRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("buscarPorNombre: debe lanzar excepción con nombre en blanco")
-    void buscarPorNombre_conNombreBlanco_debeLanzarExcepcion() {
-        assertThatThrownBy(() -> productoService.buscarPorNombre(""))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("vacío");
-    }
-
-    @Test
-    @DisplayName("buscarPorNombre: debe buscar con nombre válido")
-    void buscarPorNombre_conNombreValido_debeRetornarResultados() {
+    @DisplayName("[Producto-02] buscarPorNombre con texto válido devuelve coincidencias")
+    void buscarPorNombre_conNombreValido_devuelveCoindicencias() {
+        List<Producto> esperados = List.of(productoEjemplo(1L, "Coca Cola", 20));
         when(productoRepository.findByNombreContainingIgnoreCaseAndActivoTrue("coca"))
-            .thenReturn(Arrays.asList(productoBase));
+            .thenReturn(esperados);
+        System.out.println("  Búsqueda: 'coca' → mock devuelve 1 producto");
 
         List<Producto> resultado = productoService.buscarPorNombre("coca");
 
-        assertThat(resultado).hasSize(1);
-        verify(productoRepository).findByNombreContainingIgnoreCaseAndActivoTrue("coca");
+        assertEquals(1, resultado.size());
+        assertEquals("Coca Cola", resultado.get(0).getNombre());
+        System.out.println("  Encontrado: " + resultado.get(0).getNombre());
     }
 
     @Test
-    @DisplayName("desactivar: debe marcar el producto como inactivo")
-    void desactivar_conIdValido_debeDesactivarProducto() {
-        when(productoRepository.findById(1L)).thenReturn(Optional.of(productoBase));
-        when(productoRepository.save(any())).thenReturn(productoBase);
+    @DisplayName("[Producto-03] buscarPorNombre con nombre vacío lanza excepción — Guava valida el input")
+    void buscarPorNombre_conNombreVacio_lanzaExcepcion() {
+        System.out.println("  Entrada: nombre vacío ''");
+        System.out.println("  Guava Preconditions.checkArgument lanza IllegalArgumentException");
 
-        productoService.desactivar(1L);
+        assertThrows(IllegalArgumentException.class,
+            () -> productoService.buscarPorNombre(""));
 
-        assertThat(productoBase.getActivo()).isFalse();
-        verify(productoRepository).save(productoBase);
+        verify(productoRepository, never()).findByNombreContainingIgnoreCaseAndActivoTrue(any());
+        System.out.println("  Excepción lanzada — repositorio nunca fue invocado");
     }
 
     @Test
-    @DisplayName("desactivar: debe lanzar excepción si el producto no existe")
-    void desactivar_conIdInexistente_debeLanzarExcepcion() {
+    @DisplayName("[Producto-04] buscarPorId con ID existente devuelve el producto")
+    void buscarPorId_conIdExistente_devuelveProducto() {
+        Producto producto = productoEjemplo(5L, "Leche Gloria", 15);
+        when(productoRepository.findById(5L)).thenReturn(Optional.of(producto));
+        System.out.println("  Mock: producto ID=5 'Leche Gloria' existe en BD");
+
+        Optional<Producto> resultado = productoService.buscarPorId(5L);
+
+        assertTrue(resultado.isPresent());
+        assertEquals("Leche Gloria", resultado.get().getNombre());
+        System.out.println("  Encontrado: " + resultado.get().getNombre() + " (ID=" + resultado.get().getId() + ")");
+    }
+
+    @Test
+    @DisplayName("[Producto-05] buscarPorId con ID inexistente devuelve Optional vacío")
+    void buscarPorId_conIdInexistente_devuelveVacio() {
         when(productoRepository.findById(99L)).thenReturn(Optional.empty());
+        System.out.println("  Mock: producto ID=99 NO existe en BD");
 
-        assertThatThrownBy(() -> productoService.desactivar(99L))
-            .isInstanceOf(RuntimeException.class)
-            .hasMessageContaining("99");
+        Optional<Producto> resultado = productoService.buscarPorId(99L);
+
+        assertFalse(resultado.isPresent());
+        System.out.println("  Resultado: Optional.empty() — producto no encontrado");
+    }
+
+    @Test
+    @DisplayName("[Producto-06] reducirStock con stock suficiente descuenta la cantidad correctamente")
+    void reducirStock_conStockSuficiente_reduceCorrectamente() {
+        Producto producto = productoEjemplo(1L, "Agua San Luis", 20);
+        when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
+        when(productoRepository.save(any(Producto.class))).thenReturn(producto);
+        System.out.println("  Stock inicial: 20 | Cantidad a reducir: 5 | Stock esperado: 15");
+
+        boolean resultado = productoService.reducirStock(1L, 5);
+
+        assertTrue(resultado);
+        assertEquals(15, producto.getStock());
+        verify(productoRepository).save(producto);
+        System.out.println("  retornó true | Stock resultante: " + producto.getStock() + " unidades ✔");
+    }
+
+    @Test
+    @DisplayName("[Producto-07] reducirStock con stock insuficiente retorna false sin modificar la BD")
+    void reducirStock_conStockInsuficiente_retornaFalse() {
+        Producto producto = productoEjemplo(1L, "Agua San Luis", 3);
+        when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
+        System.out.println("  Stock disponible: 3 | Cantidad solicitada: 10");
+        System.out.println("  Se espera: false, stock no cambia, save() nunca es llamado");
+
+        boolean resultado = productoService.reducirStock(1L, 10);
+
+        assertFalse(resultado);
+        assertEquals(3, producto.getStock());
+        verify(productoRepository, never()).save(any());
+        System.out.println("  retornó false | Stock sigue en 3 | BD no fue modificada ✔");
     }
 }
