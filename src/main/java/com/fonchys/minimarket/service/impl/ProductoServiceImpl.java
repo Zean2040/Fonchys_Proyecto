@@ -91,9 +91,11 @@ public class ProductoServiceImpl implements IProductoService {
     @Transactional
     public Producto guardar(Producto producto) {
         Preconditions.checkNotNull(producto, "El producto no puede ser nulo");
-        // Apache Commons: capitalizar nombre correctamente
         if (StringUtils.isNotBlank(producto.getNombre())) {
             producto.setNombre(StringUtils.normalizeSpace(producto.getNombre()));
+        }
+        if (StringUtils.isBlank(producto.getCodigoBarras())) {
+            producto.setCodigoBarras(null);
         }
         invalidarCache();
         Producto guardado = productoRepository.save(producto);
@@ -117,7 +119,7 @@ public class ProductoServiceImpl implements IProductoService {
         existente.setContenidoNeto(datos.getContenidoNeto());
         existente.setCategoria(datos.getCategoria());
         existente.setProveedor(datos.getProveedor());
-        existente.setCodigoBarras(datos.getCodigoBarras());
+        existente.setCodigoBarras(StringUtils.isBlank(datos.getCodigoBarras()) ? null : datos.getCodigoBarras());
 
         invalidarCache();
         logger.info("Producto actualizado: id={}", id);
