@@ -47,6 +47,12 @@ public class VentaServiceImpl implements IVentaService {
         Venta venta = new Venta();
         venta.setUsuario(usuario);
         venta.setFecha(LocalDateTime.now());
+        if (StringUtils.isNotBlank(dto.getClienteNombre())) {
+            venta.setClienteNombre(dto.getClienteNombre().trim());
+        }
+        if (StringUtils.isNotBlank(dto.getClienteDni())) {
+            venta.setClienteDni(dto.getClienteDni().trim());
+        }
 
         for (VentaRequestDTO.ItemDTO item : dto.getItems()) {
             Producto producto = productoRepository.findById(item.getProductoId())

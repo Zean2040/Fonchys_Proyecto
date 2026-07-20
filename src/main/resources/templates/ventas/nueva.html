@@ -684,6 +684,20 @@
 
         <!-- Payment section -->
         <div class="payment-section">
+
+            <!-- Cliente -->
+            <div class="payment-label" style="margin-bottom:6px;">
+                <i class="bi bi-person me-1"></i>Datos del cliente <span style="color:#94a3b8;font-weight:400;">(opcional)</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 130px;gap:6px;margin-bottom:12px;">
+                <input type="text" id="clienteNombre" placeholder="Nombre del cliente"
+                       style="border:1.5px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;outline:none;color:#1e293b;width:100%;"
+                       onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e2e8f0'">
+                <input type="text" id="clienteDni" placeholder="DNI" maxlength="8"
+                       style="border:1.5px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;outline:none;color:#1e293b;width:100%;"
+                       onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e2e8f0'">
+            </div>
+
             <div class="payment-label"><i class="bi bi-cash-coin me-1"></i>Efectivo recibido</div>
 
             <div class="quick-amounts" id="quickAmounts">
@@ -707,6 +721,8 @@
 
             <!-- Hidden form -->
             <form id="formVenta" th:action="@{/ventas/registrar}" method="post">
+                <input type="hidden" id="hClienteNombre" name="clienteNombre" value="">
+                <input type="hidden" id="hClienteDni"    name="clienteDni"    value="">
                 <div id="itemsContainer"></div>
                 <button type="submit" id="btnConfirmar" class="btn-confirm" disabled>
                     <i class="bi bi-check-circle-fill"></i>
@@ -886,9 +902,7 @@ function renderCart() {
             </div>`;
         ticketItems.appendChild(div);
 
-        itemsContainer.innerHTML +=
-            `<input type="hidden" name="items[${i}].productoId" value="${item.productoId}">` +
-            `<input type="hidden" name="items[${i}].cantidad"   value="${item.cantidad}">`;
+        // items populated on submit (see form listener below)
     });
 
     const totalFmt = 'S/. ' + total.toFixed(2);
@@ -978,6 +992,30 @@ function escHtml(s) {
 // Auto-dismiss error banner
 const errBanner = document.querySelector('.pos-alert');
 if (errBanner) setTimeout(() => errBanner.style.display = 'none', 5000);
+
+// ═══════════════════════════════════════════════════════════
+//  FORM SUBMIT — poblar hidden inputs justo antes de enviar
+// ═══════════════════════════════════════════════════════════
+document.getElementById('formVenta').addEventListener('submit', function(e) {
+    if (carrito.length === 0) { e.preventDefault(); return; }
+
+    // Datos del cliente
+    document.getElementById('hClienteNombre').value = document.getElementById('clienteNombre').value.trim();
+    document.getElementById('hClienteDni').value    = document.getElementById('clienteDni').value.trim();
+
+    // Limpiar items anteriores y agregar los actuales
+    const container = document.getElementById('itemsContainer');
+    container.innerHTML = '';
+    carrito.forEach((item, i) => {
+        const addInput = (name, val) => {
+            const inp = document.createElement('input');
+            inp.type = 'hidden'; inp.name = name; inp.value = val;
+            container.appendChild(inp);
+        };
+        addInput('items[' + i + '].productoId', item.productoId);
+        addInput('items[' + i + '].cantidad',   item.cantidad);
+    });
+});
 </script>
 </body>
 </html>

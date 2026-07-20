@@ -8,6 +8,8 @@ import java.util.List;
 public class VentaRequestDTO {
 
     private List<ItemDTO> items;
+    private String clienteNombre;
+    private String clienteDni;
 
     @Data
     public static class ItemDTO {

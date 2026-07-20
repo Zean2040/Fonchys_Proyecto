@@ -34,6 +34,12 @@ public class Venta {
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<DetalleVenta> detalles = new ArrayList<>();
 
+    @Column(name = "cliente_nombre")
+    private String clienteNombre;
+
+    @Column(name = "cliente_dni", length = 20)
+    private String clienteDni;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Estado estado = Estado.COMPLETADA;

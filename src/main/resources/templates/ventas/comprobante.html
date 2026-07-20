@@ -258,6 +258,14 @@
                           th:text="${venta.estado.name() == 'COMPLETADA'} ? 'Completada' : 'Anulada'">
                     </span>
                 </div>
+                <div th:if="${venta.clienteNombre != null and !venta.clienteNombre.isEmpty()}" class="t-meta-row">
+                    <span>Cliente</span>
+                    <strong th:text="${venta.clienteNombre}"></strong>
+                </div>
+                <div th:if="${venta.clienteDni != null and !venta.clienteDni.isEmpty()}" class="t-meta-row">
+                    <span>DNI</span>
+                    <strong th:text="${venta.clienteDni}"></strong>
+                </div>
             </div>
 
             <hr class="t-divider">
