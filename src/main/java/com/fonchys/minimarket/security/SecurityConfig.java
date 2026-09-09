@@ -54,6 +54,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authenticationProvider(authenticationProvider())
+            // La API REST (/api/**) es consumida por clientes sin sesión de navegador (Postman, etc.),
+            // por lo que no pueden enviar el token CSRF que exige el formLogin basado en sesión.
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
