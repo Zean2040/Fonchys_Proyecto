@@ -1,0 +1,215 @@
+{
+  "info": {
+    "name": "Fonchys Minimarket - API REST",
+    "description": "Coleccion de evidencia para la rubrica: GET, POST, PUT, DELETE sobre /api/productos, /api/proveedores y /api/ventas. Ejecutar la carpeta '1. Login' primero para obtener la sesion (cookie), luego correr cada request en orden.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "productoId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Login (admin)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/login",
+        "description": "Paso previo: abrir /login en el navegador o en Postman (con 'Interceptor'/cookies habilitadas) y autenticarse como admin@fonchys.com / admin123. Postman reutiliza la cookie JSESSIONID para las siguientes peticiones si 'Automatically follow redirects' y el cookie jar estan activos."
+      }
+    },
+    {
+      "name": "2. GET /api/productos (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Devuelve un arreglo', () => Array.isArray(pm.response.json()));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/productos"
+      }
+    },
+    {
+      "name": "3. POST /api/productos (201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+              "pm.test('Tiene header Location', () => pm.response.headers.has('Location'));",
+              "const body = pm.response.json();",
+              "pm.collectionVariables.set('productoId', body.id);",
+              "pm.test('Devuelve el id generado', () => pm.expect(body.id).to.be.a('number'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/productos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Producto Demo Postman\",\n  \"precio\": 5.90,\n  \"stock\": 30\n}"
+        }
+      }
+    },
+    {
+      "name": "4. GET /api/productos/{id} (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Es el producto creado', () => pm.response.json().id == pm.collectionVariables.get('productoId'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/productos/{{productoId}}"
+      }
+    },
+    {
+      "name": "5. PUT /api/productos/{id} (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Nombre actualizado', () => pm.response.json().nombre === 'Producto Demo Postman (editado)');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/productos/{{productoId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Producto Demo Postman (editado)\",\n  \"precio\": 6.50,\n  \"stock\": 25\n}"
+        }
+      }
+    },
+    {
+      "name": "6. DELETE /api/productos/{id} (204)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 204 No Content', () => pm.response.to.have.status(204));",
+              "pm.test('Sin body', () => pm.response.text() === '');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/productos/{{productoId}}"
+      }
+    },
+    {
+      "name": "7. GET /api/productos/999999 (404 - no encontrado)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 404', () => pm.response.to.have.status(404));",
+              "pm.test('Cuerpo con mensaje de error', () => pm.response.json().message.includes('no encontrado'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/productos/999999"
+      }
+    },
+    {
+      "name": "8. POST /api/productos invalido (400 - validacion)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 400', () => pm.response.to.have.status(400));",
+              "pm.test('Cuerpo con status y message', () => {",
+              "  const b = pm.response.json();",
+              "  pm.expect(b.status).to.eql(400);",
+              "  pm.expect(b.message).to.be.a('string');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/productos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"\",\n  \"precio\": -1,\n  \"stock\": -5\n}"
+        }
+      }
+    },
+    {
+      "name": "9. POST /api/ventas invalido (400 - carrito vacio)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 400', () => pm.response.to.have.status(400));",
+              "pm.test('Mensaje menciona el carrito', () => pm.response.json().message.toLowerCase().includes('producto'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/ventas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"items\": []\n}"
+        }
+      }
+    },
+    {
+      "name": "10. POST /api/ventas valido (201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+              "pm.test('Descuenta stock y calcula total', () => pm.response.json().total > 0);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/ventas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"items\": [ { \"productoId\": 1, \"cantidad\": 1 } ],\n  \"clienteNombre\": \"Cliente Postman\"\n}"
+        }
+      }
+    }
+  ]
+}

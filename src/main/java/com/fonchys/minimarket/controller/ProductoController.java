@@ -4,9 +4,9 @@ import com.fonchys.minimarket.model.Categoria;
 import com.fonchys.minimarket.model.Producto;
 import com.fonchys.minimarket.model.Proveedor;
 import com.fonchys.minimarket.model.UnidadMedida;
-import com.fonchys.minimarket.repository.CategoriaRepository;
-import com.fonchys.minimarket.repository.ProveedorRepository;
+import com.fonchys.minimarket.service.ICategoriaService;
 import com.fonchys.minimarket.service.IProductoService;
+import com.fonchys.minimarket.service.IProveedorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,8 +24,8 @@ import java.util.List;
 public class ProductoController {
 
     private final IProductoService productoService;
-    private final CategoriaRepository categoriaRepository;
-    private final ProveedorRepository proveedorRepository;
+    private final ICategoriaService categoriaService;
+    private final IProveedorService proveedorService;
 
     @GetMapping
     public String lista(@RequestParam(required = false) String buscar, Model model) {
@@ -41,8 +41,8 @@ public class ProductoController {
     @PreAuthorize("hasAnyRole('ADMIN', 'ALMACENERO')")
     public String formNuevo(Model model) {
         model.addAttribute("producto", new Producto());
-        model.addAttribute("categorias", categoriaRepository.findAll());
-        model.addAttribute("proveedores", proveedorRepository.findAll());
+        model.addAttribute("categorias", categoriaService.listarTodas());
+        model.addAttribute("proveedores", proveedorService.listarTodas());
         model.addAttribute("unidades", UnidadMedida.values());
         return "productos/form";
     }
@@ -53,8 +53,8 @@ public class ProductoController {
         Producto producto = productoService.buscarPorId(id)
             .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
         model.addAttribute("producto", producto);
-        model.addAttribute("categorias", categoriaRepository.findAll());
-        model.addAttribute("proveedores", proveedorRepository.findAll());
+        model.addAttribute("categorias", categoriaService.listarTodas());
+        model.addAttribute("proveedores", proveedorService.listarTodas());
         model.addAttribute("unidades", UnidadMedida.values());
         return "productos/form";
     }
@@ -68,8 +68,8 @@ public class ProductoController {
                           Model model,
                           RedirectAttributes flash) {
         if (result.hasErrors()) {
-            model.addAttribute("categorias", categoriaRepository.findAll());
-            model.addAttribute("proveedores", proveedorRepository.findAll());
+            model.addAttribute("categorias", categoriaService.listarTodas());
+            model.addAttribute("proveedores", proveedorService.listarTodas());
             model.addAttribute("unidades", UnidadMedida.values());
             return "productos/form";
         }
@@ -79,11 +79,11 @@ public class ProductoController {
         }
 
         if (categoriaId != null) {
-            Categoria cat = categoriaRepository.findById(categoriaId).orElse(null);
+            Categoria cat = categoriaService.buscarPorId(categoriaId).orElse(null);
             producto.setCategoria(cat);
         }
         if (proveedorId != null) {
-            Proveedor prov = proveedorRepository.findById(proveedorId).orElse(null);
+            Proveedor prov = proveedorService.buscarPorId(proveedorId).orElse(null);
             producto.setProveedor(prov);
         }
         if (producto.getId() != null) {

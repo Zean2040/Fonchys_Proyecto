@@ -4,9 +4,9 @@ import com.fonchys.minimarket.dto.ProductoRequestDTO;
 import com.fonchys.minimarket.model.Categoria;
 import com.fonchys.minimarket.model.Producto;
 import com.fonchys.minimarket.model.Proveedor;
-import com.fonchys.minimarket.repository.CategoriaRepository;
-import com.fonchys.minimarket.repository.ProveedorRepository;
+import com.fonchys.minimarket.service.ICategoriaService;
 import com.fonchys.minimarket.service.IProductoService;
+import com.fonchys.minimarket.service.IProveedorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +25,8 @@ import java.util.List;
 public class ProductoRestController {
 
     private final IProductoService productoService;
-    private final CategoriaRepository categoriaRepository;
-    private final ProveedorRepository proveedorRepository;
+    private final ICategoriaService categoriaService;
+    private final IProveedorService proveedorService;
 
     @GetMapping
     public List<Producto> listar(@RequestParam(required = false) String buscar) {
@@ -81,12 +81,12 @@ public class ProductoRestController {
         producto.setCodigoBarras(dto.getCodigoBarras());
 
         if (dto.getCategoriaId() != null) {
-            Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
+            Categoria categoria = categoriaService.buscarPorId(dto.getCategoriaId())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + dto.getCategoriaId()));
             producto.setCategoria(categoria);
         }
         if (dto.getProveedorId() != null) {
-            Proveedor proveedor = proveedorRepository.findById(dto.getProveedorId())
+            Proveedor proveedor = proveedorService.buscarPorId(dto.getProveedorId())
                 .orElseThrow(() -> new RuntimeException("Proveedor no encontrado con ID: " + dto.getProveedorId()));
             producto.setProveedor(proveedor);
         }

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IProveedorService {
+    List<Proveedor> listarTodas();
     List<Proveedor> listarActivos();
     List<Proveedor> buscarPorNombre(String nombre);
     Optional<Proveedor> buscarPorId(Long id);

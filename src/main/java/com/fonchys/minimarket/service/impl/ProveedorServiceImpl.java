@@ -22,6 +22,12 @@ public class ProveedorServiceImpl implements IProveedorService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Proveedor> listarTodas() {
+        return proveedorRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Proveedor> listarActivos() {
         return proveedorRepository.findByActivoTrue();
     }
