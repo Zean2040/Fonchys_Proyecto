@@ -1,37 +1,104 @@
 {
   "info": {
     "name": "Fonchys Minimarket - API REST",
-    "description": "Coleccion de evidencia para la rubrica: GET, POST, PUT, DELETE sobre /api/productos, /api/proveedores y /api/ventas. Ejecutar la carpeta '1. Login' primero para obtener la sesion (cookie), luego correr cada request en orden.",
+    "description": "Pruebas de la API REST. Ejecutar 1a (obtener CSRF), 1b (iniciar sesion) y 2 (consultar productos) en orden. El token se guarda automaticamente y Postman conserva la cookie JSESSIONID. Mantener habilitado el cookie jar. Las peticiones posteriores crean, modifican y desactivan datos de prueba. Consultar postman/README.md.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "loginEmail", "value": "admin@fonchys.com" },
+    { "key": "loginPassword", "value": "admin123" },
+    { "key": "fonchysCsrfToken", "value": "" },
     { "key": "productoId", "value": "" }
   ],
+  "auth": { "type": "noauth" },
   "item": [
     {
-      "name": "1. Login (admin)",
-      "request": {
-        "method": "GET",
-        "url": "{{baseUrl}}/login",
-        "description": "Paso previo: abrir /login en el navegador o en Postman (con 'Interceptor'/cookies habilitadas) y autenticarse como admin@fonchys.com / admin123. Postman reutiliza la cookie JSESSIONID para las siguientes peticiones si 'Automatically follow redirects' y el cookie jar estan activos."
-      }
-    },
-    {
-      "name": "2. GET /api/productos (200)",
+      "name": "1a. GET /login (obtener CSRF)",
+      "protocolProfileBehavior": { "followRedirects": false },
       "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.unset('fonchysCsrfToken');"
+            ]
+          }
+        },
         {
           "listen": "test",
           "script": {
+            "type": "text/javascript",
             "exec": [
-              "pm.test('Status 200', () => pm.response.to.have.status(200));",
-              "pm.test('Devuelve un arreglo', () => Array.isArray(pm.response.json()));"
+              "pm.test('Formulario disponible (200)', () => pm.response.to.have.status(200));",
+              "const input = pm.response.text().match(/<input\\b[^>]*\\bname=[\"']_csrf[\"'][^>]*>/i);",
+              "const token = input && input[0].match(/\\bvalue=[\"']([^\"']+)[\"']/i);",
+              "pm.test('El formulario contiene un token CSRF', () => pm.expect(token, 'Borra las cookies de localhost y repite 1a').to.not.be.null);",
+              "if (pm.response.code === 200 && token) {",
+              "  pm.collectionVariables.set('fonchysCsrfToken', token[1]);",
+              "}"
             ]
           }
         }
       ],
       "request": {
         "method": "GET",
+        "url": "{{baseUrl}}/login",
+        "description": "Devuelve HTML deliberadamente para obtener el token CSRF. El script guarda el token y el cookie jar conserva la sesion. Despues ejecuta 1b. Si venias usando cookies antiguas, borra las de localhost antes de este paso."
+      }
+    },
+    {
+      "name": "1b. POST /login (iniciar sesion admin)",
+      "protocolProfileBehavior": { "followRedirects": false },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Login responde con redireccion (302)', () => pm.response.to.have.status(302));",
+              "pm.test('Administrador autenticado: destino /dashboard', () => {",
+              "  pm.expect(pm.response.headers.get('Location'), 'Si apunta a /login, revisa CSRF y cookies; si contiene error=true, revisa las credenciales').to.match(/\\/dashboard$/);",
+              "});",
+              "pm.collectionVariables.unset('fonchysCsrfToken');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/login",
+        "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "username", "value": "{{loginEmail}}", "type": "text" },
+            { "key": "password", "value": "{{loginPassword}}", "type": "text" },
+            { "key": "_csrf", "value": "{{fonchysCsrfToken}}", "type": "text" }
+          ]
+        },
+        "description": "Ejecutar inmediatamente despues de 1a, conservando las cookies. Para admin se espera 302 hacia /dashboard; /login no devuelve JSON. Postman guarda automaticamente el nuevo JSESSIONID. Cada nuevo intento de login debe empezar por 1a."
+      }
+    },
+    {
+      "name": "2. GET /api/productos (200)",
+      "protocolProfileBehavior": { "followRedirects": false },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Content-Type JSON', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+              "pm.test('Devuelve un arreglo', () => pm.expect(pm.response.json()).to.be.an('array'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
         "url": "{{baseUrl}}/api/productos"
       }
     },
