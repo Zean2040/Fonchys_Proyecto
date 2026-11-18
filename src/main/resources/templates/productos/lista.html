@@ -112,7 +112,7 @@
                                 <span th:class="${p.stock <= (p.stockMinimo != null ? p.stockMinimo : 5)} ? 'badge bg-danger' : 'badge bg-success'"
                                       th:text="${p.stock}"></span>
                                 <small class="text-muted d-block"
-                                       th:text="'mín: ' + (p.stockMinimo != null ? p.stockMinimo : 5)"></small>
+                                       th:text="'mín: ' + ${p.stockMinimo != null ? p.stockMinimo : 5}"></small>
                             </td>
                             <td>
                                 <span th:if="${p.activo}" class="badge bg-success">Activo</span>
