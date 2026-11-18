@@ -20,6 +20,11 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 /**
  * Define dos cadenas de seguridad independientes:
@@ -72,6 +77,19 @@ public class SecurityConfig {
         };
     }
 
+    /** Permite que el frontend Angular (otro origen, puerto 4200) consuma la API. */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:4200"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", config);
+        return source;
+    }
+
     /** Cadena 1: API REST, autenticacion stateless via JWT. Se evalua antes que la cadena web. */
     @Bean
     @Order(1)
@@ -79,6 +97,7 @@ public class SecurityConfig {
         http
             .securityMatcher("/api/**")
             .authenticationProvider(authenticationProvider())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
@@ -106,6 +125,8 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/actuator/**").hasRole("ADMIN")
                 .requestMatchers("/reportes/**", "/usuarios/**", "/empleados/**", "/proveedores/**").hasRole("ADMIN")
+                .requestMatchers("/dashboard").hasRole("ADMIN")
+                .requestMatchers("/productos/**").hasAnyRole("ADMIN", "ALMACENERO")
                 .requestMatchers("/ventas/**").hasAnyRole("ADMIN", "CAJERO")
                 .anyRequest().authenticated()
             )

@@ -1,0 +1,11 @@
+@if (auth.isAuthenticated()) {
+  <nav class="navbar">
+    <span class="brand">Fonchys Minimarket</span>
+    <a routerLink="/productos">Productos</a>
+    <span class="spacer"></span>
+    <span class="usuario">{{ auth.email() }} · {{ auth.rol() }}</span>
+    <button type="button" (click)="salir()">Salir</button>
+  </nav>
+}
+
+<router-outlet />
