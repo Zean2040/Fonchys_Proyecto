@@ -1,0 +1,45 @@
+<div class="page">
+  <h1>{{ modoEdicion() ? 'Editar proveedor' : 'Nuevo proveedor' }}</h1>
+
+  @if (error()) {
+    <p class="alert">{{ error() }}</p>
+  }
+
+  <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+    <label>
+      Nombre *
+      <input type="text" formControlName="nombre" placeholder="Ej: Distribuidora Lima S.A.C." />
+    </label>
+    @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+      <p class="field-error">El nombre es obligatorio.</p>
+    }
+
+    <div class="row">
+      <label>
+        RUC
+        <input type="text" formControlName="ruc" />
+      </label>
+      <label>
+        Tel&eacute;fono
+        <input type="text" formControlName="telefono" />
+      </label>
+    </div>
+
+    <label>
+      Email
+      <input type="email" formControlName="email" />
+    </label>
+
+    <label>
+      Direcci&oacute;n
+      <input type="text" formControlName="direccion" />
+    </label>
+
+    <div class="acciones-form">
+      <button type="submit" [disabled]="guardando()">
+        {{ guardando() ? 'Guardando...' : 'Guardar' }}
+      </button>
+      <a routerLink="/proveedores">Cancelar</a>
+    </div>
+  </form>
+</div>

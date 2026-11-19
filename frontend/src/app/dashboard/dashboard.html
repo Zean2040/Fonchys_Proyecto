@@ -1,0 +1,62 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Dashboard</h1>
+  </div>
+
+  @if (error()) {
+    <p class="alert">{{ error() }}</p>
+  }
+
+  @if (cargando()) {
+    <p>Cargando...</p>
+  } @else if (resumen(); as r) {
+    <div class="stat-grid">
+      <div class="stat-card">
+        <p class="stat-label">Ventas de hoy</p>
+        <p class="stat-value">S/. {{ r.totalVentasHoy | number: '1.2-2' }}</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">N&deg; de ventas hoy</p>
+        <p class="stat-value">{{ r.cantVentasHoy }}</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Productos activos</p>
+        <p class="stat-value">{{ r.totalProductos }}</p>
+      </div>
+      <div class="stat-card stat-card-warn">
+        <p class="stat-label">Con stock bajo</p>
+        <p class="stat-value">{{ r.productosStockBajo.length }}</p>
+      </div>
+    </div>
+
+    <h2 class="section-title">Productos con stock bajo</h2>
+    @if (r.productosStockBajo.length === 0) {
+      <p>No hay productos con stock bajo.</p>
+    } @else {
+      <table>
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Stock actual</th>
+            <th>Stock m&iacute;nimo</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of r.productosStockBajo; track p.id) {
+            <tr>
+              <td>{{ p.nombre }}</td>
+              <td>{{ p.stock }}</td>
+              <td>{{ p.stockMinimo }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+
+    <p class="dashboard-links">
+      <a routerLink="/productos">Ir a Productos</a> &middot;
+      <a routerLink="/ventas">Ir a Ventas</a> &middot;
+      <a routerLink="/reportes">Ir a Reportes</a>
+    </p>
+  }
+</div>

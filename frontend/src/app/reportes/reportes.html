@@ -1,0 +1,74 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Reportes de ventas</h1>
+  </div>
+
+  <form class="row filtros" [formGroup]="filtros" (ngSubmit)="buscar()">
+    <label>
+      Desde
+      <input type="date" formControlName="fechaInicio" />
+    </label>
+    <label>
+      Hasta
+      <input type="date" formControlName="fechaFin" />
+    </label>
+    <div class="acciones-form">
+      <button type="submit">Filtrar</button>
+      <button type="button" (click)="limpiar()">Limpiar</button>
+    </div>
+  </form>
+
+  @if (error()) {
+    <p class="alert">{{ error() }}</p>
+  }
+
+  @if (cargando()) {
+    <p>Cargando...</p>
+  } @else if (reporte(); as r) {
+    <div class="stat-grid">
+      <div class="stat-card">
+        <p class="stat-label">Ingresos totales</p>
+        <p class="stat-value">S/. {{ r.totalIngresos | number: '1.2-2' }}</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Ventas completadas</p>
+        <p class="stat-value">{{ r.ventasCompletadas }}</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Ventas anuladas</p>
+        <p class="stat-value">{{ r.ventasAnuladas }}</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Ticket promedio</p>
+        <p class="stat-value">S/. {{ r.ticketPromedio | number: '1.2-2' }}</p>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Cliente</th>
+          <th>Cajero</th>
+          <th>Total</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (v of r.ventas; track v.id) {
+          <tr>
+            <td>{{ v.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ v.clienteNombre || '-' }}</td>
+            <td>{{ v.usuarioEmail }}</td>
+            <td>S/. {{ v.total | number: '1.2-2' }}</td>
+            <td>{{ v.estado }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5">No hay ventas en el rango seleccionado.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

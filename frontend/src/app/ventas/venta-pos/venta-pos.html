@@ -1,0 +1,74 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Punto de venta</h1>
+    <a routerLink="/ventas">Ver historial</a>
+  </div>
+
+  @if (error()) {
+    <p class="alert">{{ error() }}</p>
+  }
+
+  <div class="pos-layout">
+    <div class="pos-selector">
+      <label>
+        Producto
+        <select [(ngModel)]="productoSeleccionadoId">
+          <option [ngValue]="null">Selecciona un producto...</option>
+          @for (p of productos(); track p.id) {
+            <option [ngValue]="p.id">{{ p.nombre }} &mdash; S/. {{ p.precio | number: '1.2-2' }} (stock: {{ p.stock }})</option>
+          }
+        </select>
+      </label>
+      <label>
+        Cantidad
+        <input type="number" min="1" [(ngModel)]="cantidadSeleccionada" />
+      </label>
+      <button type="button" class="btn-primary" (click)="agregarAlCarrito()">Agregar al carrito</button>
+    </div>
+
+    <div class="pos-cart">
+      <h2 class="section-title">Carrito</h2>
+      @if (carrito().length === 0) {
+        <p>Sin productos agregados.</p>
+      } @else {
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Subtotal</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (linea of carrito(); track linea.producto.id) {
+              <tr>
+                <td>{{ linea.producto.nombre }}</td>
+                <td>{{ linea.cantidad }}</td>
+                <td>S/. {{ linea.producto.precio * linea.cantidad | number: '1.2-2' }}</td>
+                <td><button type="button" (click)="quitarLinea(linea)">Quitar</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+
+      <p class="pos-total">Total: S/. {{ total() | number: '1.2-2' }}</p>
+
+      <div class="row">
+        <label>
+          Cliente (opcional)
+          <input type="text" [(ngModel)]="clienteNombre" />
+        </label>
+        <label>
+          DNI (opcional)
+          <input type="text" [(ngModel)]="clienteDni" />
+        </label>
+      </div>
+
+      <button type="button" [disabled]="registrando() || carrito().length === 0" (click)="registrarVenta()">
+        {{ registrando() ? 'Registrando...' : 'Registrar venta' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,56 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Ventas</h1>
+    <a routerLink="/ventas/nueva" class="btn-primary">+ Nueva venta</a>
+  </div>
+
+  @if (mensaje()) {
+    <p class="alert alert-success">{{ mensaje() }}</p>
+  }
+  @if (error()) {
+    <p class="alert">{{ error() }}</p>
+  }
+
+  @if (cargando()) {
+    <p>Cargando...</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Fecha</th>
+          <th>Cliente</th>
+          <th>Cajero</th>
+          <th>Total</th>
+          <th>Estado</th>
+          @if (puedeAnular()) {
+            <th>Acciones</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (v of ventas(); track v.id) {
+          <tr>
+            <td>{{ v.id }}</td>
+            <td>{{ v.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ v.clienteNombre || '-' }}</td>
+            <td>{{ v.usuarioEmail }}</td>
+            <td>S/. {{ v.total | number: '1.2-2' }}</td>
+            <td>{{ v.estado }}</td>
+            @if (puedeAnular()) {
+              <td class="acciones">
+                @if (v.estado === 'COMPLETADA') {
+                  <button type="button" (click)="anular(v)">Anular</button>
+                }
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="puedeAnular() ? 7 : 6">No hay ventas registradas.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

@@ -1,0 +1,50 @@
+<div class="page">
+  <h1>{{ modoEdicion() ? 'Editar empleado' : 'Nuevo empleado' }}</h1>
+
+  @if (error()) {
+    <p class="alert">{{ error() }}</p>
+  }
+
+  <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="row">
+      <label>
+        Nombre *
+        <input type="text" formControlName="nombre" />
+      </label>
+      <label>
+        Apellido *
+        <input type="text" formControlName="apellido" />
+      </label>
+    </div>
+    @if ((form.controls.nombre.touched && form.controls.nombre.invalid) ||
+         (form.controls.apellido.touched && form.controls.apellido.invalid)) {
+      <p class="field-error">Nombre y apellido son obligatorios.</p>
+    }
+
+    <label>
+      Cargo *
+      <input type="text" formControlName="cargo" placeholder="Ej: Cajero" />
+    </label>
+    @if (form.controls.cargo.touched && form.controls.cargo.invalid) {
+      <p class="field-error">El cargo es obligatorio.</p>
+    }
+
+    <div class="row">
+      <label>
+        Tel&eacute;fono
+        <input type="text" formControlName="telefono" />
+      </label>
+      <label>
+        Email
+        <input type="email" formControlName="email" />
+      </label>
+    </div>
+
+    <div class="acciones-form">
+      <button type="submit" [disabled]="guardando()">
+        {{ guardando() ? 'Guardando...' : 'Guardar' }}
+      </button>
+      <a routerLink="/empleados">Cancelar</a>
+    </div>
+  </form>
+</div>

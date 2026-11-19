@@ -23,7 +23,10 @@ import java.util.stream.Collectors;
     ProductoRestController.class,
     ProveedorRestController.class,
     VentaRestController.class,
-    AuthRestController.class
+    AuthRestController.class,
+    DashboardRestController.class,
+    ReporteRestController.class,
+    EmpleadoRestController.class
 })
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class RestExceptionHandler {

@@ -1,0 +1,47 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Proveedores</h1>
+    <a routerLink="/proveedores/nuevo" class="btn-primary">+ Nuevo proveedor</a>
+  </div>
+
+  @if (mensaje()) {
+    <p class="alert alert-success">{{ mensaje() }}</p>
+  }
+  @if (error()) {
+    <p class="alert">{{ error() }}</p>
+  }
+
+  @if (cargando()) {
+    <p>Cargando...</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>RUC</th>
+          <th>Tel&eacute;fono</th>
+          <th>Email</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of proveedores(); track p.id) {
+          <tr>
+            <td>{{ p.nombre }}</td>
+            <td>{{ p.ruc || '-' }}</td>
+            <td>{{ p.telefono || '-' }}</td>
+            <td>{{ p.email || '-' }}</td>
+            <td class="acciones">
+              <a [routerLink]="['/proveedores/editar', p.id]">Editar</a>
+              <button type="button" (click)="eliminar(p)">Eliminar</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5">No hay proveedores registrados.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

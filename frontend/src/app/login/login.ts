@@ -11,7 +11,7 @@ import { AuthService } from '../core/auth.service';
 })
 export class Login {
   private readonly fb = inject(FormBuilder);
-  private readonly auth = inject(AuthService);
+  readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
   readonly error = signal<string | null>(null);
@@ -34,7 +34,14 @@ export class Login {
     this.auth.login(email!, password!).subscribe({
       next: () => {
         this.cargando.set(false);
-        this.router.navigate(['/productos']);
+        const rol = this.auth.rol();
+        if (rol === 'CAJERO') {
+          this.router.navigate(['/ventas/nueva']);
+        } else if (rol === 'ALMACENERO') {
+          this.router.navigate(['/productos']);
+        } else {
+          this.router.navigate(['/dashboard']);
+        }
       },
       error: (err) => {
         this.cargando.set(false);

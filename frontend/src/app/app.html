@@ -1,7 +1,21 @@
 @if (auth.isAuthenticated()) {
   <nav class="navbar">
     <span class="brand">Fonchys Minimarket</span>
-    <a routerLink="/productos">Productos</a>
+    @if (auth.rol() === 'ADMIN') {
+      <a routerLink="/dashboard">Dashboard</a>
+    }
+    @if (auth.rol() === 'ADMIN' || auth.rol() === 'ALMACENERO') {
+      <a routerLink="/productos">Productos</a>
+    }
+    @if (auth.rol() === 'ADMIN' || auth.rol() === 'CAJERO') {
+      <a routerLink="/ventas/nueva">Punto de venta</a>
+      <a routerLink="/ventas">Ventas</a>
+    }
+    @if (auth.rol() === 'ADMIN') {
+      <a routerLink="/empleados">Empleados</a>
+      <a routerLink="/proveedores">Proveedores</a>
+      <a routerLink="/reportes">Reportes</a>
+    }
     <span class="spacer"></span>
     <span class="usuario">{{ auth.email() }} · {{ auth.rol() }}</span>
     <button type="button" (click)="salir()">Salir</button>
