@@ -32,7 +32,7 @@
             <td>{{ e.cargo }}</td>
             <td>{{ e.telefono || '-' }}</td>
             <td>{{ e.email || '-' }}</td>
-            <td>{{ e.activo ? 'Activo' : 'Inactivo' }}</td>
+            <td><span class="badge" [class.badge-success]="e.activo" [class.badge-muted]="!e.activo">{{ e.activo ? 'Activo' : 'Inactivo' }}</span></td>
             <td class="acciones">
               <a [routerLink]="['/empleados/editar', e.id]">Editar</a>
               <button type="button" (click)="eliminar(e)">Desactivar</button>

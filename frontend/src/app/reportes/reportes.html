@@ -61,7 +61,7 @@
             <td>{{ v.clienteNombre || '-' }}</td>
             <td>{{ v.usuarioEmail }}</td>
             <td>S/. {{ v.total | number: '1.2-2' }}</td>
-            <td>{{ v.estado }}</td>
+            <td><span class="badge" [class.badge-success]="v.estado === 'COMPLETADA'" [class.badge-danger]="v.estado === 'ANULADA'">{{ v.estado }}</span></td>
           </tr>
         } @empty {
           <tr>

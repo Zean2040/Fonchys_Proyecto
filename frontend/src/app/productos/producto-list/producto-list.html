@@ -34,7 +34,7 @@
             <td>{{ p.nombre }}</td>
             <td>S/. {{ p.precio | number: '1.2-2' }}</td>
             <td>{{ p.stock }}</td>
-            <td>{{ p.activo ? 'Activo' : 'Inactivo' }}</td>
+            <td><span class="badge" [class.badge-success]="p.activo" [class.badge-muted]="!p.activo">{{ p.activo ? 'Activo' : 'Inactivo' }}</span></td>
             @if (puedeEscribir()) {
               <td class="acciones">
                 <a [routerLink]="['/productos/editar', p.id]">Editar</a>
