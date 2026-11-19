@@ -1,50 +1,64 @@
-<div class="page">
-  <h1>{{ modoEdicion() ? 'Editar empleado' : 'Nuevo empleado' }}</h1>
+<div class="container py-4" style="max-width: 640px;">
+  <div class="d-flex align-items-center mb-4">
+    <a routerLink="/empleados" class="btn btn-outline-secondary btn-sm me-3">
+      <i class="bi bi-arrow-left"></i>
+    </a>
+    <h2 class="fw-bold mb-0">
+      <i class="bi bi-person-badge me-2 text-primary"></i>{{ modoEdicion() ? 'Editar empleado' : 'Nuevo empleado' }}
+    </h2>
+  </div>
 
   @if (error()) {
-    <p class="alert">{{ error() }}</p>
+    <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>{{ error() }}</div>
   }
 
-  <form class="form" [formGroup]="form" (ngSubmit)="submit()">
-    <div class="row">
-      <label>
-        Nombre *
-        <input type="text" formControlName="nombre" />
-      </label>
-      <label>
-        Apellido *
-        <input type="text" formControlName="apellido" />
-      </label>
-    </div>
-    @if ((form.controls.nombre.touched && form.controls.nombre.invalid) ||
-         (form.controls.apellido.touched && form.controls.apellido.invalid)) {
-      <p class="field-error">Nombre y apellido son obligatorios.</p>
-    }
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-primary text-white py-3">
+        <h6 class="mb-0 fw-semibold"><i class="bi bi-person me-2"></i>Datos del Empleado</h6>
+      </div>
+      <div class="card-body p-4">
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" formControlName="nombre"
+                   [class.is-invalid]="form.controls.nombre.touched && form.controls.nombre.invalid" placeholder="Nombre" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Apellido <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" formControlName="apellido"
+                   [class.is-invalid]="form.controls.apellido.touched && form.controls.apellido.invalid" placeholder="Apellido" />
+          </div>
+        </div>
+        @if ((form.controls.nombre.touched && form.controls.nombre.invalid) || (form.controls.apellido.touched && form.controls.apellido.invalid)) {
+          <p class="text-danger small mt-n2">Nombre y apellido son obligatorios.</p>
+        }
 
-    <label>
-      Cargo *
-      <input type="text" formControlName="cargo" placeholder="Ej: Cajero" />
-    </label>
-    @if (form.controls.cargo.touched && form.controls.cargo.invalid) {
-      <p class="field-error">El cargo es obligatorio.</p>
-    }
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Cargo <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" formControlName="cargo"
+                 [class.is-invalid]="form.controls.cargo.touched && form.controls.cargo.invalid"
+                 placeholder="Ej: Cajero, Almacenero, Reponedor..." />
+        </div>
 
-    <div class="row">
-      <label>
-        Tel&eacute;fono
-        <input type="text" formControlName="telefono" />
-      </label>
-      <label>
-        Email
-        <input type="email" formControlName="email" />
-      </label>
-    </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Tel&eacute;fono</label>
+            <input type="text" class="form-control" formControlName="telefono" placeholder="Ej: 987654321" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Email personal</label>
+            <input type="email" class="form-control" formControlName="email" placeholder="empleado@correo.com" />
+          </div>
+        </div>
+      </div>
 
-    <div class="acciones-form">
-      <button type="submit" [disabled]="guardando()">
-        {{ guardando() ? 'Guardando...' : 'Guardar' }}
-      </button>
-      <a routerLink="/empleados">Cancelar</a>
+      <div class="card-footer bg-transparent d-flex gap-2 p-4 border-top">
+        <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+          <i class="bi bi-floppy me-2"></i>{{ guardando() ? 'Guardando...' : 'Guardar' }}
+        </button>
+        <a routerLink="/empleados" class="btn btn-outline-secondary">Cancelar</a>
+      </div>
     </div>
   </form>
 </div>

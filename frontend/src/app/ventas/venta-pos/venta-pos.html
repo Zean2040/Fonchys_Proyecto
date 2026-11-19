@@ -1,74 +1,98 @@
-<div class="page">
-  <div class="page-header">
-    <h1>Punto de venta</h1>
-    <a routerLink="/ventas">Ver historial</a>
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">
+      <i class="bi bi-cart-plus me-2 text-primary"></i>Punto de Venta
+    </h2>
+    <a routerLink="/ventas" class="btn btn-outline-secondary">
+      <i class="bi bi-clock-history me-1"></i>Ver historial
+    </a>
   </div>
 
   @if (error()) {
-    <p class="alert">{{ error() }}</p>
+    <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>{{ error() }}</div>
   }
 
-  <div class="pos-layout">
-    <div class="pos-selector">
-      <label>
-        Producto
-        <select [(ngModel)]="productoSeleccionadoId">
-          <option [ngValue]="null">Selecciona un producto...</option>
-          @for (p of productos(); track p.id) {
-            <option [ngValue]="p.id">{{ p.nombre }} &mdash; S/. {{ p.precio | number: '1.2-2' }} (stock: {{ p.stock }})</option>
-          }
-        </select>
-      </label>
-      <label>
-        Cantidad
-        <input type="number" min="1" [(ngModel)]="cantidadSeleccionada" />
-      </label>
-      <button type="button" class="btn-primary" (click)="agregarAlCarrito()">Agregar al carrito</button>
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-primary text-white py-3">
+          <h6 class="mb-0 fw-semibold"><i class="bi bi-box-seam me-2"></i>Agregar producto</h6>
+        </div>
+        <div class="card-body p-4">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Producto</label>
+            <select class="form-select" [(ngModel)]="productoSeleccionadoId">
+              <option [ngValue]="null">Selecciona un producto...</option>
+              @for (p of productos(); track p.id) {
+                <option [ngValue]="p.id">{{ p.nombre }} &mdash; S/. {{ p.precio | number: '1.2-2' }} (stock: {{ p.stock }})</option>
+              }
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Cantidad</label>
+            <input type="number" min="1" class="form-control" [(ngModel)]="cantidadSeleccionada" />
+          </div>
+          <button type="button" class="btn btn-primary w-100" (click)="agregarAlCarrito()">
+            <i class="bi bi-plus-circle me-2"></i>Agregar al carrito
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div class="pos-cart">
-      <h2 class="section-title">Carrito</h2>
-      @if (carrito().length === 0) {
-        <p>Sin productos agregados.</p>
-      } @else {
-        <table>
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Cantidad</th>
-              <th>Subtotal</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (linea of carrito(); track linea.producto.id) {
-              <tr>
-                <td>{{ linea.producto.nombre }}</td>
-                <td>{{ linea.cantidad }}</td>
-                <td>S/. {{ linea.producto.precio * linea.cantidad | number: '1.2-2' }}</td>
-                <td><button type="button" (click)="quitarLinea(linea)">Quitar</button></td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      }
-
-      <p class="pos-total">Total: S/. {{ total() | number: '1.2-2' }}</p>
-
-      <div class="row">
-        <label>
-          Cliente (opcional)
-          <input type="text" [(ngModel)]="clienteNombre" />
-        </label>
-        <label>
-          DNI (opcional)
-          <input type="text" [(ngModel)]="clienteDni" />
-        </label>
+    <div class="col-md-8">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 py-3">
+          <h6 class="mb-0 fw-semibold"><i class="bi bi-cart3 me-2 text-secondary"></i>Carrito</h6>
+        </div>
+        <div class="card-body p-0">
+          @if (carrito().length === 0) {
+            <p class="text-muted text-center py-4 mb-0"><i class="bi bi-inbox fs-3 d-block mb-2"></i>Sin productos agregados.</p>
+          } @else {
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Producto</th>
+                  <th class="text-center">Cantidad</th>
+                  <th class="text-end">Subtotal</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (linea of carrito(); track linea.producto.id) {
+                  <tr>
+                    <td>{{ linea.producto.nombre }}</td>
+                    <td class="text-center">{{ linea.cantidad }}</td>
+                    <td class="text-end fw-semibold text-success">S/. {{ linea.producto.precio * linea.cantidad | number: '1.2-2' }}</td>
+                    <td class="text-end">
+                      <button type="button" class="btn btn-sm btn-outline-danger" (click)="quitarLinea(linea)">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+        <div class="card-footer bg-white border-top">
+          <div class="d-flex justify-content-end mb-3">
+            <h4 class="fw-bold mb-0">Total: <span class="text-success">S/. {{ total() | number: '1.2-2' }}</span></h4>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Cliente (opcional)</label>
+              <input type="text" class="form-control" [(ngModel)]="clienteNombre" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">DNI (opcional)</label>
+              <input type="text" class="form-control" [(ngModel)]="clienteDni" />
+            </div>
+          </div>
+          <button type="button" class="btn btn-success w-100 py-2" [disabled]="registrando() || carrito().length === 0" (click)="registrarVenta()">
+            <i class="bi bi-check-circle me-2"></i>{{ registrando() ? 'Registrando...' : 'Registrar venta' }}
+          </button>
+        </div>
       </div>
-
-      <button type="button" [disabled]="registrando() || carrito().length === 0" (click)="registrarVenta()">
-        {{ registrando() ? 'Registrando...' : 'Registrar venta' }}
-      </button>
     </div>
   </div>
 </div>

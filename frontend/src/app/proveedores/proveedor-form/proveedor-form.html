@@ -1,45 +1,58 @@
-<div class="page">
-  <h1>{{ modoEdicion() ? 'Editar proveedor' : 'Nuevo proveedor' }}</h1>
+<div class="container py-4" style="max-width: 640px;">
+  <div class="d-flex align-items-center mb-4">
+    <a routerLink="/proveedores" class="btn btn-outline-secondary btn-sm me-3">
+      <i class="bi bi-arrow-left"></i>
+    </a>
+    <h2 class="fw-bold mb-0">
+      <i class="bi bi-truck me-2 text-primary"></i>{{ modoEdicion() ? 'Editar proveedor' : 'Nuevo proveedor' }}
+    </h2>
+  </div>
 
   @if (error()) {
-    <p class="alert">{{ error() }}</p>
+    <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>{{ error() }}</div>
   }
 
-  <form class="form" [formGroup]="form" (ngSubmit)="submit()">
-    <label>
-      Nombre *
-      <input type="text" formControlName="nombre" placeholder="Ej: Distribuidora Lima S.A.C." />
-    </label>
-    @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
-      <p class="field-error">El nombre es obligatorio.</p>
-    }
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-primary text-white py-3">
+        <h6 class="mb-0 fw-semibold"><i class="bi bi-truck me-2"></i>Datos del Proveedor</h6>
+      </div>
+      <div class="card-body p-4">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" formControlName="nombre"
+                 [class.is-invalid]="form.controls.nombre.touched && form.controls.nombre.invalid"
+                 placeholder="Ej: Distribuidora Lima S.A.C." />
+        </div>
 
-    <div class="row">
-      <label>
-        RUC
-        <input type="text" formControlName="ruc" />
-      </label>
-      <label>
-        Tel&eacute;fono
-        <input type="text" formControlName="telefono" />
-      </label>
-    </div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">RUC</label>
+            <input type="text" class="form-control" formControlName="ruc" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Tel&eacute;fono</label>
+            <input type="text" class="form-control" formControlName="telefono" />
+          </div>
+        </div>
 
-    <label>
-      Email
-      <input type="email" formControlName="email" />
-    </label>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Email</label>
+          <input type="email" class="form-control" formControlName="email" />
+        </div>
 
-    <label>
-      Direcci&oacute;n
-      <input type="text" formControlName="direccion" />
-    </label>
+        <div class="mb-0">
+          <label class="form-label fw-semibold">Direcci&oacute;n</label>
+          <input type="text" class="form-control" formControlName="direccion" />
+        </div>
+      </div>
 
-    <div class="acciones-form">
-      <button type="submit" [disabled]="guardando()">
-        {{ guardando() ? 'Guardando...' : 'Guardar' }}
-      </button>
-      <a routerLink="/proveedores">Cancelar</a>
+      <div class="card-footer bg-transparent d-flex gap-2 p-4 border-top">
+        <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+          <i class="bi bi-floppy me-2"></i>{{ guardando() ? 'Guardando...' : 'Guardar' }}
+        </button>
+        <a routerLink="/proveedores" class="btn btn-outline-secondary">Cancelar</a>
+      </div>
     </div>
   </form>
 </div>

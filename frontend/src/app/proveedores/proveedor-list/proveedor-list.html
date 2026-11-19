@@ -1,47 +1,64 @@
-<div class="page">
-  <div class="page-header">
-    <h1>Proveedores</h1>
-    <a routerLink="/proveedores/nuevo" class="btn-primary">+ Nuevo proveedor</a>
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">
+      <i class="bi bi-truck me-2 text-primary"></i>Proveedores
+    </h2>
+    <a routerLink="/proveedores/nuevo" class="btn btn-primary">
+      <i class="bi bi-plus-circle me-2"></i>Nuevo Proveedor
+    </a>
   </div>
 
   @if (mensaje()) {
-    <p class="alert alert-success">{{ mensaje() }}</p>
+    <div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>{{ mensaje() }}</div>
   }
   @if (error()) {
-    <p class="alert">{{ error() }}</p>
+    <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>{{ error() }}</div>
   }
 
-  @if (cargando()) {
-    <p>Cargando...</p>
-  } @else {
-    <table>
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>RUC</th>
-          <th>Tel&eacute;fono</th>
-          <th>Email</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (p of proveedores(); track p.id) {
-          <tr>
-            <td>{{ p.nombre }}</td>
-            <td>{{ p.ruc || '-' }}</td>
-            <td>{{ p.telefono || '-' }}</td>
-            <td>{{ p.email || '-' }}</td>
-            <td class="acciones">
-              <a [routerLink]="['/proveedores/editar', p.id]">Editar</a>
-              <button type="button" (click)="eliminar(p)">Eliminar</button>
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="5">No hay proveedores registrados.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  }
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      @if (cargando()) {
+        <p class="text-muted p-3 mb-0">Cargando...</p>
+      } @else {
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-dark">
+            <tr>
+              <th>Nombre</th>
+              <th>RUC</th>
+              <th>Tel&eacute;fono</th>
+              <th>Email</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of proveedores(); track p.id) {
+              <tr>
+                <td class="fw-semibold">{{ p.nombre }}</td>
+                <td>{{ p.ruc || '—' }}</td>
+                <td>{{ p.telefono || '—' }}</td>
+                <td>{{ p.email || '—' }}</td>
+                <td>
+                  <a [routerLink]="['/proveedores/editar', p.id]" class="btn btn-sm btn-outline-primary me-1">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="eliminar(p)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="text-center text-muted py-4">
+                  <i class="bi bi-inbox fs-3 d-block mb-2"></i>No hay proveedores registrados
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+    <div class="card-footer text-muted small">
+      Total: <strong>{{ proveedores().length }}</strong> proveedores
+    </div>
+  </div>
 </div>

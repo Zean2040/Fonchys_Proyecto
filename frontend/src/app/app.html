@@ -1,27 +1,66 @@
 @if (auth.isAuthenticated()) {
-  <nav class="navbar">
-    <span class="brand">Fonchys Minimarket</span>
-    @if (auth.rol() === 'ADMIN') {
-      <a routerLink="/dashboard" routerLinkActive="active-link">Dashboard</a>
-    }
-    @if (auth.rol() === 'ADMIN' || auth.rol() === 'ALMACENERO') {
-      <a routerLink="/productos" routerLinkActive="active-link">Productos</a>
-    }
-    @if (auth.rol() === 'ADMIN' || auth.rol() === 'CAJERO') {
-      <a routerLink="/ventas/nueva" routerLinkActive="active-link">Punto de venta</a>
-      <a routerLink="/ventas" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">Ventas</a>
-    }
-    @if (auth.rol() === 'ADMIN') {
-      <a routerLink="/empleados" routerLinkActive="active-link">Empleados</a>
-      <a routerLink="/proveedores" routerLinkActive="active-link">Proveedores</a>
-      <a routerLink="/reportes" routerLinkActive="active-link">Reportes</a>
-    }
-    <span class="spacer"></span>
-    <span class="usuario">
-      <span class="avatar">{{ inicial() }}</span>
-      {{ auth.email() }} · {{ auth.rol() }}
-    </span>
-    <button type="button" (click)="salir()">Salir</button>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold text-warning" routerLink="/dashboard">
+        <i class="bi bi-shop me-2"></i>Fonchys
+      </a>
+      <div class="collapse navbar-collapse show">
+        <ul class="navbar-nav me-auto">
+          @if (auth.rol() === 'ADMIN') {
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">
+                <i class="bi bi-speedometer2 me-1"></i>Dashboard
+              </a>
+            </li>
+          }
+          @if (auth.rol() === 'ADMIN' || auth.rol() === 'ALMACENERO') {
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/productos" routerLinkActive="active">
+                <i class="bi bi-box-seam me-1"></i>Productos
+              </a>
+            </li>
+          }
+          @if (auth.rol() === 'ADMIN' || auth.rol() === 'CAJERO') {
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/ventas/nueva" routerLinkActive="active">
+                <i class="bi bi-cart-plus me-1"></i>Punto de Venta
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/ventas" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+                <i class="bi bi-receipt me-1"></i>Ventas
+              </a>
+            </li>
+          }
+          @if (auth.rol() === 'ADMIN') {
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/empleados" routerLinkActive="active">
+                <i class="bi bi-people me-1"></i>Empleados
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/proveedores" routerLinkActive="active">
+                <i class="bi bi-truck me-1"></i>Proveedores
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/reportes" routerLinkActive="active">
+                <i class="bi bi-bar-chart-line me-1"></i>Reportes
+              </a>
+            </li>
+          }
+        </ul>
+        <div class="d-flex align-items-center gap-3">
+          <span class="text-light small">
+            <i class="bi bi-person-circle me-1"></i>{{ auth.email() }}
+            <span class="badge bg-secondary ms-1">{{ auth.rol() }}</span>
+          </span>
+          <button type="button" class="btn btn-sm btn-outline-light" (click)="salir()">
+            <i class="bi bi-box-arrow-right me-1"></i>Salir
+          </button>
+        </div>
+      </div>
+    </div>
   </nav>
 }
 

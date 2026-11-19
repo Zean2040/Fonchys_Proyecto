@@ -10,8 +10,12 @@ export class ProductoService {
 
   constructor(private readonly http: HttpClient) {}
 
-  listar(): Observable<Producto[]> {
-    return this.http.get<Producto[]>(this.base);
+  listar(buscar?: string): Observable<Producto[]> {
+    const params: Record<string, string> = {};
+    if (buscar) {
+      params['buscar'] = buscar;
+    }
+    return this.http.get<Producto[]>(this.base, { params });
   }
 
   obtener(id: number): Observable<Producto> {

@@ -1,49 +1,83 @@
-<div class="page">
-  <div class="page-header">
-    <h1>Empleados</h1>
-    <a routerLink="/empleados/nuevo" class="btn-primary">+ Nuevo empleado</a>
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">
+      <i class="bi bi-people me-2 text-primary"></i>Empleados
+    </h2>
+    <a routerLink="/empleados/nuevo" class="btn btn-primary">
+      <i class="bi bi-plus-circle me-2"></i>Nuevo Empleado
+    </a>
   </div>
 
   @if (mensaje()) {
-    <p class="alert alert-success">{{ mensaje() }}</p>
+    <div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>{{ mensaje() }}</div>
   }
   @if (error()) {
-    <p class="alert">{{ error() }}</p>
+    <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>{{ error() }}</div>
   }
 
-  @if (cargando()) {
-    <p>Cargando...</p>
-  } @else {
-    <table>
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Cargo</th>
-          <th>Tel&eacute;fono</th>
-          <th>Email</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (e of empleados(); track e.id) {
-          <tr>
-            <td>{{ e.nombre }} {{ e.apellido }}</td>
-            <td>{{ e.cargo }}</td>
-            <td>{{ e.telefono || '-' }}</td>
-            <td>{{ e.email || '-' }}</td>
-            <td><span class="badge" [class.badge-success]="e.activo" [class.badge-muted]="!e.activo">{{ e.activo ? 'Activo' : 'Inactivo' }}</span></td>
-            <td class="acciones">
-              <a [routerLink]="['/empleados/editar', e.id]">Editar</a>
-              <button type="button" (click)="eliminar(e)">Desactivar</button>
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="6">No hay empleados registrados.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  }
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      @if (cargando()) {
+        <p class="text-muted p-3 mb-0">Cargando...</p>
+      } @else {
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-dark">
+            <tr>
+              <th>#</th>
+              <th>Nombre Completo</th>
+              <th>Cargo</th>
+              <th>Tel&eacute;fono</th>
+              <th>Email</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (e of empleados(); track e.id) {
+              <tr>
+                <td>{{ e.id }}</td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width:36px;height:36px;min-width:36px;">
+                      <i class="bi bi-person text-primary"></i>
+                    </div>
+                    <div class="fw-semibold">{{ e.nombre }} {{ e.apellido }}</div>
+                  </div>
+                </td>
+                <td><span class="badge bg-secondary">{{ e.cargo }}</span></td>
+                <td>{{ e.telefono || '—' }}</td>
+                <td>
+                  @if (e.email) {
+                    <a [href]="'mailto:' + e.email" class="text-decoration-none small">{{ e.email }}</a>
+                  } @else {
+                    <span>—</span>
+                  }
+                </td>
+                <td>
+                  <span class="badge" [class.bg-success]="e.activo" [class.bg-secondary]="!e.activo">{{ e.activo ? 'Activo' : 'Inactivo' }}</span>
+                </td>
+                <td>
+                  <a [routerLink]="['/empleados/editar', e.id]" class="btn btn-sm btn-outline-primary me-1">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="eliminar(e)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="text-center text-muted py-5">
+                  <i class="bi bi-people fs-2 d-block mb-2"></i>No hay empleados registrados
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+    <div class="card-footer text-muted small">
+      Total: <strong>{{ empleados().length }}</strong> empleados
+    </div>
+  </div>
 </div>
